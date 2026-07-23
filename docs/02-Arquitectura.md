@@ -4,7 +4,7 @@
 |--------|-------|
 | Proyecto | Munchinking League |
 | Documento | Arquitectura |
-| Versión | 2.0 |
+| Versión | 2.1 |
 | Estado | Aprobado |
 | Última actualización | 23/07/2026 |
 
@@ -14,129 +14,146 @@
 
 Este documento define la arquitectura técnica de Munchinking League.
 
-El objetivo es disponer de una arquitectura moderna, escalable y completamente desarrollada en TypeScript, aprovechando al máximo el ecosistema Cloudflare y manteniendo el proyecto preparado para futuras integraciones con Biwenger.
+La arquitectura ha sido diseñada para construir una aplicación moderna, completamente tipada y preparada para evolucionar durante varias temporadas sin necesidad de rediseñar su núcleo.
+
+Toda la aplicación se desarrollará utilizando TypeScript de extremo a extremo y estará desplegada íntegramente sobre la infraestructura de Cloudflare.
+
+El diseño separa completamente la lógica del juego de cualquier integración externa, permitiendo incorporar en el futuro una integración con Biwenger sin modificar el dominio principal.
 
 ---
 
-# 2. Objetivos de la arquitectura
+# 2. Objetivos
 
-La arquitectura debe cumplir los siguientes objetivos:
+La arquitectura deberá cumplir los siguientes objetivos.
 
-- Coste cero (plan gratuito).
-- Fácil mantenimiento.
-- Escalable.
+- Coste de infraestructura cero.
+- Arquitectura sencilla.
 - Alto rendimiento.
+- Escalabilidad.
+- Mantenibilidad.
 - Seguridad.
 - Mobile First.
-- Preparada para futuras animaciones.
+- Preparación para animaciones.
 - Tipado extremo a extremo.
 - Independencia respecto a Biwenger.
 
 ---
 
-# 3. Principios
+# 3. Principios arquitectónicos
 
-Durante el desarrollo se seguirán los siguientes principios.
+## Separación de responsabilidades
 
-## Simplicidad
-
-Cada componente deberá tener una única responsabilidad.
+Cada componente tendrá una única responsabilidad claramente definida.
 
 ---
 
-## Desacoplamiento
+## Dominio independiente
 
-La lógica del juego nunca dependerá del frontend.
+Las reglas del juego nunca dependerán del framework, de la base de datos ni de la interfaz de usuario.
 
----
-
-## Escalabilidad
-
-Toda decisión debe permitir crecer sin grandes cambios estructurales.
+Toda la lógica funcional deberá residir en el dominio.
 
 ---
 
-## Tipado
+## Tipado completo
 
 Todo el proyecto utilizará TypeScript.
 
-No se aceptará código JavaScript.
+No existirá código JavaScript.
+
+Toda comunicación entre frontend y backend estará completamente tipada mediante tRPC.
 
 ---
 
-## Reutilización
+## Arquitectura evolutiva
 
-Los componentes deberán ser reutilizables.
+Todas las decisiones deberán facilitar la incorporación de nuevas funcionalidades sin modificar la estructura existente.
+
+La incorporación de nuevas cartas, efectos, temporadas o ligas no deberá requerir cambios estructurales.
+
+---
+
+## Modelo basado en movimientos
+
+El sistema no almacenará estados históricos.
+
+Toda modificación sobre una copia física de una carta se registrará mediante un **CardMovement**.
+
+El historial será siempre una consulta sobre dichos movimientos.
+
+Este patrón garantiza un registro inmutable de toda la actividad del sistema.
 
 ---
 
 ## Mobile First
 
-La interfaz estará diseñada primero para móviles.
+La aplicación se diseñará primero para dispositivos móviles.
+
+Posteriormente se adaptará a escritorio.
 
 ---
 
 # 4. Stack tecnológico
 
 | Capa | Tecnología |
-|-------|------------|
+|------|------------|
 | Frontend | React |
 | Lenguaje | TypeScript |
-| Build | Vite |
+| Bundler | Vite |
 | Router | TanStack Router |
-| Estado servidor | TanStack Query |
+| Estado remoto | TanStack Query |
 | Comunicación | tRPC |
 | Backend | Cloudflare Workers |
 | ORM | Drizzle ORM |
 | Base de datos | Cloudflare D1 |
-| Almacenamiento | Cloudflare R2 |
-| CSS | Tailwind CSS |
+| Archivos | Cloudflare R2 |
+| Estilos | Tailwind CSS |
 | Repositorio | GitHub |
-| Hosting | Cloudflare Pages |
+| Despliegue | Cloudflare Pages |
 
 ---
 
 # 5. Arquitectura general
 
 ```text
-                 Navegador
+                    Navegador
 
-                      │
+                         │
 
-                  React
+                     React
 
-                      │
+                         │
 
-             TanStack Router
+               TanStack Router
 
-                      │
+                         │
 
-             TanStack Query
+               TanStack Query
 
-                      │
+                         │
 
-                    tRPC
+                      tRPC
 
-                      │
+                         │
 
-          Cloudflare Workers
+              Cloudflare Workers
 
-                      │
+                         │
 
-                Drizzle ORM
+                  Drizzle ORM
 
-                      │
+                         │
 
-             Cloudflare D1
+                Cloudflare D1
 
-                      │
+                         │
 
-             Cloudflare R2
+                Cloudflare R2
 ```
 
-Toda la comunicación entre frontend y backend se realizará mediante procedimientos tRPC.
-
 No existirán endpoints REST públicos.
+
+Toda la comunicación entre cliente y servidor se realizará mediante procedimientos tRPC.
 
 ---
 
@@ -161,79 +178,90 @@ munchinking-league/
 └── package.json
 ```
 
+Esta estructura permitirá compartir tipos, componentes y lógica entre todas las capas del sistema.
+
 ---
 
-# 7. Descripción de carpetas
+# 7. Organización del código
 
 ## apps/web
 
-Aplicación React.
+Contendrá exclusivamente la aplicación React.
 
-Contendrá:
+Responsabilidades:
 
-- Pantallas
-- Navegación
-- Componentes específicos
-- Hooks
-- Gestión de sesión
+- Pantallas.
+- Navegación.
+- Componentes específicos.
+- Gestión de sesión.
+- Comunicación mediante tRPC.
 
 ---
 
 ## packages/server
 
-Contendrá toda la lógica del backend.
+Contendrá toda la lógica de negocio.
 
 Incluye:
 
-- Procedimientos tRPC
-- Servicios
-- Casos de uso
-- Reglas del juego
+- Procedimientos tRPC.
+- Casos de uso.
+- Servicios de dominio.
+- Reglas del juego.
 
 ---
 
 ## packages/database
 
-Responsable de:
+Responsable del acceso a datos.
 
-- Esquema Drizzle
-- Migraciones
-- Conexión con D1
+Incluye:
+
+- Esquema Drizzle.
+- Migraciones.
+- Conexión con Cloudflare D1.
+
+Nunca contendrá reglas de negocio.
 
 ---
 
 ## packages/shared
 
-Código compartido entre frontend y backend.
+Contendrá todos los elementos compartidos entre frontend y backend.
 
 Ejemplos:
 
-- Tipos
-- Interfaces
-- Enumerados
-- Constantes
-- Validaciones
+- Tipos.
+- Interfaces.
+- Enumerados.
+- Validaciones.
+- Constantes.
 
 ---
 
 ## packages/ui
 
-Biblioteca de componentes.
+Biblioteca de componentes reutilizables.
 
 Ejemplos:
 
-- Cartas
-- Botones
-- Diálogos
-- Badges
-- Modales
-- Animaciones
+- Card.
+- CardFan.
+- Dialog.
+- Button.
+- Badge.
+- NotificationBadge.
+- BottomNavigation.
+- Modales.
+- Componentes animados.
+
+Todo el diseño visual de la aplicación residirá en este paquete.
 
 ---
 
 # 8. Arquitectura por capas
 
-La aplicación estará organizada en cuatro capas.
+La aplicación se dividirá en cuatro capas claramente diferenciadas.
 
 ```text
 Presentación
@@ -251,126 +279,144 @@ Dominio
 Persistencia
 ```
 
-Cada capa solo podrá acceder a la inmediatamente inferior.
+Cada capa únicamente podrá depender de la inmediatamente inferior.
 
----
+Esta restricción evita el acoplamiento entre la interfaz y las reglas del juego.
+# 9. Capa de Presentación
 
-# 9. Capa de presentación
-
-Responsable de la interfaz.
+La capa de presentación es responsable exclusivamente de la experiencia de usuario.
 
 Incluye:
 
-- React
-- Componentes
-- Formularios
-- Navegación
-- Animaciones
+- Pantallas.
+- Componentes React.
+- Navegación.
+- Formularios.
+- Animaciones.
+- Gestión de estado local.
 
-No contendrá reglas de negocio.
+No contendrá ninguna regla de negocio.
+
+Toda la lógica relacionada con el juego será delegada a la capa de aplicación mediante procedimientos tRPC.
 
 ---
 
-# 10. Capa de aplicación
+# 10. Capa de Aplicación
 
-Coordina las operaciones del sistema.
+La capa de aplicación coordina la ejecución de los casos de uso.
 
-Ejemplos:
+No contiene reglas de negocio complejas.
 
+Su responsabilidad consiste en:
+
+- Validar permisos.
+- Orquestar servicios.
+- Ejecutar transacciones.
+- Gestionar errores.
+- Devolver respuestas tipadas.
+
+Ejemplos de casos de uso:
+
+- Repartir carta.
 - Jugar carta.
 - Descartar carta.
-- Repartir cartas.
 - Devolver carta.
-
-Esta capa orquesta los casos de uso.
-
-No conoce detalles de la base de datos.
+- Obtener historial.
+- Consultar biblioteca.
+- Obtener notificaciones.
 
 ---
 
-# 11. Capa de dominio
+# 11. Capa de Dominio
 
-Es el núcleo de Munchinking League.
+El dominio constituye el núcleo de Munchinking League.
 
-Aquí reside toda la lógica funcional.
+Aquí residen todas las reglas del juego.
 
-Ejemplos:
+Las principales entidades del dominio son:
 
-- Gestión del mazo.
-- Estados de una carta.
-- Reglas de reparto.
-- Gestión de temporadas.
-- Gestión de ligas.
-- Historial.
-- Validaciones.
-- Generación de mensajes.
+- League
+- Season
+- Manager
+- CardDefinition
+- CardCopy
+- Deck
+- CardMovement
+- Notification
 
-El dominio nunca dependerá del framework utilizado.
-# 12. Capa de persistencia
+El dominio nunca conocerá:
 
-La capa de persistencia será la única responsable del acceso a la base de datos.
+- React.
+- Cloudflare.
+- Drizzle.
+- D1.
+- tRPC.
 
-Nunca contendrá reglas de negocio.
+De esta forma podrá evolucionar independientemente de la tecnología utilizada.
 
-Toda la comunicación con Cloudflare D1 se realizará mediante Drizzle ORM.
+---
 
-Sus responsabilidades serán:
+# 12. Capa de Persistencia
+
+La persistencia será la única responsable del acceso a Cloudflare D1.
+
+Se implementará mediante Drizzle ORM.
+
+Responsabilidades:
 
 - Consultar datos.
 - Crear registros.
-- Actualizar información.
-- Eliminar registros cuando sea necesario.
+- Actualizar entidades.
 - Gestionar transacciones.
+- Ejecutar migraciones.
 
-Los repositorios actuarán como intermediarios entre el dominio y la base de datos.
+No contendrá lógica funcional.
 
 ---
 
-# 13. Comunicación entre Frontend y Backend
+# 13. Comunicación Cliente-Servidor
 
-La comunicación se realizará mediante **tRPC**.
+Toda la comunicación entre el frontend y el backend se realizará mediante tRPC.
 
-Esta decisión proporciona:
-
-- Tipado extremo a extremo.
-- Eliminación de clientes REST manuales.
-- Autocompletado completo en el IDE.
-- Detección de errores en tiempo de compilación.
-- Compartición automática de tipos entre frontend y backend.
+No existirán endpoints REST públicos.
 
 Ejemplo:
 
 ```ts
-await trpc.cards.play.mutate({
-  cardId,
+await trpc.card.play.mutate({
+  cardCopyId,
   targetManagerId
 });
 ```
 
-El frontend nunca realizará llamadas `fetch()` directamente a la API.
+Las ventajas de esta aproximación son:
 
-Toda la comunicación estará encapsulada por tRPC.
+- Tipado extremo a extremo.
+- Autocompletado.
+- Eliminación de clientes REST.
+- Detección de errores en compilación.
+- Compartición automática de tipos.
 
 ---
 
 # 14. Gestión del estado
 
-La aplicación utilizará dos tipos de estado.
+El estado se dividirá en dos categorías.
 
-## Estado del servidor
+## Estado remoto
 
 Gestionado mediante TanStack Query.
 
 Responsable de:
 
 - Cachear consultas.
-- Refrescar información.
-- Invalidar datos.
+- Sincronizar datos.
+- Invalidar caché.
 - Reintentos automáticos.
 
 Ejemplos:
 
-- Mano de cartas.
+- Mano.
 - Historial.
 - Biblioteca.
 - Notificaciones.
@@ -385,8 +431,8 @@ Ejemplos:
 
 - Carta seleccionada.
 - Modal abierto.
-- Mostrar/Ocultar cartas.
 - Animaciones.
+- Mostrar u ocultar cartas.
 - Formularios.
 
 ---
@@ -395,9 +441,7 @@ Ejemplos:
 
 La navegación utilizará TanStack Router.
 
-Las rutas estarán completamente tipadas.
-
-Ejemplo:
+Principales rutas:
 
 ```text
 /
@@ -415,146 +459,243 @@ Ejemplo:
 /admin
 ```
 
-Cada pantalla se cargará mediante lazy loading cuando sea posible.
+Todas las rutas estarán completamente tipadas.
+
+Las pantallas se cargarán mediante lazy loading cuando sea posible.
 
 ---
 
-# 16. Motor del mazo
+# 16. Motor de CardMovement
 
-El mazo constituye el núcleo funcional de la aplicación.
+El corazón del sistema es el registro de movimientos de cartas.
 
-Cada temporada dispondrá de un único mazo.
+Cada modificación realizada sobre una CardCopy generará un CardMovement.
 
-Cada copia física de una carta será única.
+Los movimientos son inmutables.
 
-Una carta únicamente podrá encontrarse en uno de estos estados:
+Nunca se eliminan.
 
-- En el mazo.
-- En la mano de un manager.
+Nunca se modifican.
 
-Cuando una carta sea:
-
-- Jugada.
-- Descartada.
-
-Volverá inmediatamente al mazo.
-
-El historial conservará permanentemente el registro de la acción realizada.
+El estado histórico del sistema puede reconstruirse completamente a partir de ellos.
 
 ---
 
-# 17. Motor de acciones
+## Zonas
 
-Toda acción realizada por un manager generará un registro permanente.
+Toda CardCopy únicamente podrá encontrarse en una de las siguientes zonas.
 
-Ejemplos:
+- Deck
+- Hand
+- Played
+- Discarded
 
-- Carta jugada.
-- Carta descartada.
-- Carta validada.
-- Carta devuelta.
-
-Las acciones nunca serán eliminadas.
-
-Constituyen el historial oficial de la temporada.
+Estas zonas representan la ubicación lógica de una copia física.
 
 ---
 
-# 18. Motor de mensajes
+## Tipos de movimiento
 
-Cada carta podrá generar automáticamente un mensaje para WhatsApp.
+Los movimientos registrados serán:
 
-El mensaje será construido a partir de una plantilla.
+- Deal
+- Play
+- Discard
+- ReturnToDeck
+- ReturnToHand
 
-Ejemplo:
+Cada movimiento indicará:
 
+- Copia afectada.
+- Zona origen.
+- Zona destino.
+- Manager responsable.
+- Fecha.
+- Motivo.
+
+---
+
+## Ventajas
+
+Este modelo permite:
+
+- Reconstruir el historial completo.
+- Obtener estadísticas.
+- Auditar cualquier acción.
+- Simplificar la lógica del juego.
+- Mantener un registro inmutable.
+
+El historial deja de ser una entidad propia y pasa a ser una vista derivada de los movimientos.
+
+---
+
+# 17. Motor del Deck
+
+Cada Season dispone de un único Deck.
+
+El Deck contiene todas las CardCopy pertenecientes a la temporada.
+
+Cuando un manager recibe una carta:
+
+```text
+Deck
+
+↓
+
+Hand
 ```
-🃏 Pablo ha jugado "Presi-Culo"
 
-🎯 Objetivo: Juan
+Cuando juega una carta:
 
-📅 Jornada 12
+```text
+Hand
+
+↓
+
+Played
+
+↓
+
+Deck
 ```
 
-Las variables serán sustituidas automáticamente.
+Cuando descarta una carta:
 
-El usuario podrá copiar el mensaje con un único botón.
+```text
+Hand
+
+↓
+
+Discarded
+
+↓
+
+Deck
+```
+
+Cuando un administrador devuelve una carta:
+
+```text
+Played
+
+↓
+
+Hand
+```
+
+El Deck nunca desaparece.
+
+Nunca necesita reconstruirse.
+
+Siempre contiene todas las cartas que no están en la mano de un manager.
+
+---
+
+# 18. Motor de Mensajes
+
+Cada CardDefinition podrá disponer de una plantilla para WhatsApp.
+
+Cuando un manager juegue una carta, el sistema generará automáticamente un mensaje.
+
+La generación consistirá en sustituir variables como:
+
+- Manager.
+- Carta.
+- Objetivo.
+- Jornada (si aplica).
+
+El mensaje podrá copiarse con un único botón.
 
 La aplicación nunca enviará mensajes automáticamente.
+# 19. Motor de Notificaciones
 
----
+Las notificaciones informan a los managers de todos los eventos relevantes ocurridos durante la temporada.
 
-# 19. Motor de notificaciones
+Todas las notificaciones serán internas a la aplicación.
 
-Todas las notificaciones serán internas.
+## Tipos de notificación
 
-Tipos:
-
-- Nueva carta.
-- Carta validada.
+- Nueva carta recibida.
 - Carta devuelta.
-- Aviso administrativo.
+- Carta validada.
+- Aviso del administrador.
 
-Las notificaciones push quedan fuera del MVP.
+Cada notificación pertenecerá a un único manager.
 
-El icono de notificaciones mostrará un contador con un máximo visual de **9+**.
+Las notificaciones podrán encontrarse en dos estados:
+
+- No leída.
+- Leída.
+
+No se eliminarán automáticamente.
 
 ---
 
-# 20. Gestión de temporadas
+# 20. Seguridad
+
+Toda la autenticación estará basada en JWT.
+
+Cada petición comprobará automáticamente:
+
+- Usuario autenticado.
+- Liga activa.
+- Temporada activa.
+- Permisos del usuario.
+
+La autorización siempre será validada en el servidor.
+
+Nunca se confiará en datos enviados por el cliente.
+
+Los administradores dispondrán de permisos adicionales para ejecutar operaciones de gestión.
+
+---
+
+# 21. Gestión de temporadas
 
 Cada liga podrá almacenar múltiples temporadas.
 
-Solo podrá existir una temporada activa.
+Una temporada representa una edición completa de la competición.
 
-Todas las operaciones de la aplicación se realizarán siempre sobre dicha temporada.
+Reglas:
 
-Las temporadas cerradas permanecerán disponibles únicamente para consulta.
-
----
-
-# 21. Gestión de ligas
-
-La arquitectura permitirá gestionar múltiples ligas.
-
-Aunque la versión 1.0 únicamente utilizará una, todas las entidades estarán asociadas a una liga.
-
-Esto permitirá ampliar el proyecto sin modificar el modelo principal.
+- Solo podrá existir una temporada activa.
+- Todas las operaciones se realizarán sobre la temporada activa.
+- Las temporadas finalizadas permanecerán disponibles únicamente para consulta.
+- El inicio de una nueva temporada no eliminará el historial de temporadas anteriores.
 
 ---
 
-# 22. Seguridad
+# 22. Gestión de recursos
 
-La autenticación utilizará JWT.
+Las imágenes de las cartas, logotipos y demás recursos gráficos se almacenarán en Cloudflare R2.
 
-Cada petición verificará:
+La aplicación accederá a ellos mediante URLs públicas servidas a través de la CDN de Cloudflare.
 
-- Usuario autenticado.
-- Liga.
-- Temporada activa.
-- Permisos.
+Ventajas:
 
-Los administradores dispondrán de permisos adicionales.
-
-Nunca se confiará en información enviada desde el cliente.
+- Baja latencia.
+- Caché global.
+- Coste cero dentro del plan gratuito.
+- Escalabilidad.
 
 ---
 
 # 23. Rendimiento
 
-Objetivos de rendimiento:
+La arquitectura deberá cumplir los siguientes objetivos:
 
-- Tiempo de carga inicial inferior a 2 segundos.
+- Tiempo de carga inicial inferior a dos segundos.
 - Navegación fluida.
-- Carga diferida de componentes pesados.
+- Componentes cargados bajo demanda (Lazy Loading).
+- Cacheado automático de consultas mediante TanStack Query.
 - Optimización automática de imágenes.
-- Consultas cacheadas mediante TanStack Query.
+- Reutilización de componentes para minimizar renderizados.
 
 ---
 
 # 24. Gestión de errores
 
-Todos los procedimientos devolverán respuestas consistentes.
+Todos los procedimientos tRPC devolverán respuestas consistentes.
 
 Ejemplo:
 
@@ -563,89 +704,164 @@ Ejemplo:
   success: false,
   error: {
     code: "CARD_NOT_FOUND",
-    message: "La carta no existe."
+    message: "La carta seleccionada no existe."
   }
 }
 ```
 
-Los errores internos nunca serán expuestos al usuario.
+Los errores internos nunca serán mostrados al usuario.
 
-Todos los errores críticos serán registrados para facilitar su diagnóstico.
+Los errores críticos serán registrados para facilitar su diagnóstico.
 
 ---
 
 # 25. Despliegue
 
-El proyecto utilizará integración continua mediante GitHub.
+Todo el proyecto se desplegará automáticamente desde GitHub.
 
-Cada cambio aceptado en la rama principal generará automáticamente un nuevo despliegue.
+La infraestructura estará compuesta por:
 
-Infraestructura:
-
+```text
 Frontend
-
-↓
-
+    │
+    ▼
 Cloudflare Pages
 
 Backend
-
-↓
-
+    │
+    ▼
 Cloudflare Workers
 
 Base de datos
-
-↓
-
+    │
+    ▼
 Cloudflare D1
 
 Archivos
-
-↓
-
+    │
+    ▼
 Cloudflare R2
+```
 
-Todo el sistema funcionará dentro del ecosistema Cloudflare.
+Cada cambio aceptado en la rama principal generará un nuevo despliegue automático.
 
 ---
 
 # 26. Integración futura con Biwenger
 
-La aplicación no dependerá de Biwenger.
+La arquitectura ha sido diseñada para que la integración con Biwenger sea completamente independiente del núcleo del sistema.
 
-Si en el futuro se dispone de una integración oficial, se desarrollará un módulo independiente encargado de:
+En una futura versión podrá añadirse un módulo específico encargado de:
 
 - Autenticación.
-- Sincronización.
+- Sincronización de datos.
+- Obtención de jornadas.
 - Aplicación automática de efectos.
+- Sincronización de plantillas y jugadores.
 
 El resto del sistema permanecerá inalterado.
 
 ---
 
-# 27. Decisiones arquitectónicas
+# 27. Escalabilidad
 
-Las siguientes decisiones forman parte de la arquitectura del proyecto:
+La arquitectura permitirá incorporar nuevas funcionalidades sin modificar el núcleo de la aplicación.
 
-- Mobile First.
-- Full TypeScript.
-- Arquitectura por capas.
-- Monorepo.
-- Comunicación mediante tRPC.
-- Sin API REST pública.
-- Cloudflare como infraestructura completa.
-- Historial inmutable.
-- Un único mazo por temporada.
-- Una única temporada activa.
-- Preparación para múltiples ligas.
-- Separación completa respecto a Biwenger.
+Entre ellas:
+
+- Nuevas cartas.
+- Nuevas rarezas.
+- Nuevos tipos de efecto.
+- Nuevas temporadas.
+- Múltiples ligas.
+- Integración con servicios externos.
+- Estadísticas avanzadas.
+- Logros.
+- Aplicación móvil nativa.
 
 ---
 
-# 28. Historial de cambios
+# 28. Decisiones arquitectónicas
+
+Las siguientes decisiones forman parte de la arquitectura oficial del proyecto.
+
+## Arquitectura
+
+- Arquitectura por capas.
+- Monorepo.
+- Full TypeScript.
+- Mobile First.
+
+## Frontend
+
+- React.
+- Vite.
+- TanStack Router.
+- TanStack Query.
+- Tailwind CSS.
+
+## Backend
+
+- Cloudflare Workers.
+- tRPC.
+- Drizzle ORM.
+
+## Persistencia
+
+- Cloudflare D1.
+- Cloudflare R2.
+
+## Dominio
+
+- Una única temporada activa por liga.
+- Un único Deck por temporada.
+- CardDefinition como definición de una carta.
+- CardCopy como copia física de una carta.
+- CardMovement como registro inmutable de movimientos.
+- El historial se obtiene consultando los CardMovement.
+- Las cartas jugadas y descartadas regresan inmediatamente al Deck.
+- Las cartas devueltas regresan directamente a la Hand del manager.
+
+---
+
+# 29. Convenciones del proyecto
+
+Con el objetivo de mantener una nomenclatura consistente, el código utilizará siempre inglés para las entidades principales del dominio.
+
+| Dominio | Código |
+|----------|--------|
+| Liga | League |
+| Temporada | Season |
+| Manager | Manager |
+| Carta | CardDefinition |
+| Copia de carta | CardCopy |
+| Mazo | Deck |
+| Mano | Hand |
+| Movimiento | CardMovement |
+| Notificación | Notification |
+| Biblioteca | CardCatalog |
+
+La interfaz de usuario continuará mostrando estos conceptos en español.
+
+---
+
+# 30. Conclusiones
+
+La arquitectura de Munchinking League se basa en cuatro principios fundamentales:
+
+- Un dominio desacoplado de la tecnología.
+- Un modelo basado en movimientos inmutables.
+- Tipado completo de extremo a extremo.
+- Infraestructura gratuita y escalable.
+
+Estas decisiones permitirán mantener una base sólida sobre la que evolucionar el proyecto durante múltiples temporadas sin necesidad de rediseñar su núcleo.
+
+---
+
+# 31. Historial de cambios
 
 | Versión | Descripción |
 |----------|-------------|
 | 1.0 | Arquitectura inicial basada en API REST. |
-| 2.0 | Migración a arquitectura Full TypeScript con tRPC, TanStack Router, TanStack Query, Drizzle ORM, monorepo y actualización del modelo de infraestructura. |
+| 2.0 | Migración a arquitectura Full TypeScript con tRPC, TanStack Router, TanStack Query, Drizzle ORM y monorepo. |
+| 2.1 | Refactorización del dominio mediante CardDefinition, CardCopy y CardMovement. Eliminación del concepto de Acción e introducción del modelo basado en movimientos. |
