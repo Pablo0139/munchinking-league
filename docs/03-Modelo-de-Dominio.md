@@ -1,353 +1,559 @@
 # Modelo de Dominio
 
-**Proyecto:** Munchinking League Companion
-
-**Documento:** Modelo de Dominio
-
-**Versión:** 1.0
+| Campo | Valor |
+|--------|-------|
+| Proyecto | Munchinking League |
+| Documento | Modelo de Dominio |
+| Versión | 1.0 |
+| Estado | Aprobado |
+| Última actualización | 23/07/2026 |
 
 ---
 
 # 1. Objetivo
 
-Este documento define las entidades principales que forman parte del universo de la aplicación.
+Este documento define el modelo conceptual de Munchinking League.
 
-No representa la base de datos.
+Su objetivo es identificar todas las entidades del sistema, sus responsabilidades y las relaciones existentes entre ellas.
 
-Representa el funcionamiento del juego.
-
----
-
-# 2. Dominio
-
-El dominio principal es la gestión de una competición de managers basada en Biwenger con reglas personalizadas.
-
-La aplicación administra todas las mecánicas adicionales.
+No describe tablas de base de datos ni detalles técnicos de implementación.
 
 ---
 
-# 3. Entidades
+# 2. Visión general
 
-Las siguientes entidades forman parte del dominio.
+El dominio se organiza alrededor de una **Liga**.
 
-- Liga
-- Temporada
-- Manager
-- Carta
-- Inventario
-- Mazo
-- Acción
-- Evento
-- Historial
-- Configuración
+Una liga contiene varias temporadas.
 
----
+Cada temporada dispone de un mazo de cartas, un conjunto de managers y un historial de acciones.
 
-# 4. Liga
-
-Representa una competición.
-
-Actualmente existirá una única liga.
-
-En el futuro podrán existir varias.
-
----
-
-## Atributos
-
-- Nombre
-- Temporada activa
-- Configuración
-- Número de managers
+```text
+Liga
+│
+├── Temporadas
+│
+├── Managers
+│
+├── Cartas
+│
+├── Mazo
+│
+├── Acciones
+│
+└── Notificaciones
+```
 
 ---
 
-# 5. Temporada
+# 3. Liga
 
-Representa una edición anual.
+La Liga representa el espacio donde se desarrolla toda la competición.
 
-Ejemplo:
+## Responsabilidades
 
-2025/26
+- Mantener la configuración general.
+- Gestionar los managers.
+- Almacenar las temporadas.
+- Definir los administradores.
 
-2026/27
+## Reglas
 
-2027/28
-
----
-
-Una temporada contiene:
-
-- Managers
-- Cartas
-- Historial
-- Estadísticas
-- Eventos
+- Una liga puede tener muchas temporadas.
+- Solo una temporada puede estar activa.
 
 ---
 
-# 6. Manager
+# 4. Temporada
+
+Representa una edición anual de la competición.
+
+## Responsabilidades
+
+- Mantener el mazo.
+- Gestionar las cartas en juego.
+- Registrar el historial.
+- Asociar managers participantes.
+
+## Reglas
+
+- Pertenece a una única liga.
+- Solo puede existir una temporada activa.
+- Las temporadas cerradas son de solo lectura.
+
+---
+
+# 5. Manager
 
 Representa a un jugador de la liga.
 
-Puede:
+## Responsabilidades
 
-- Obtener cartas
-- Utilizar cartas
-- Recibir cartas
-- Ser objetivo de cartas
-- Consultar historial
+- Mantener su mano de cartas.
+- Jugar cartas.
+- Descartar cartas.
+- Consultar historial.
+- Recibir notificaciones.
+
+## Reglas
+
+- Puede tener como máximo tres cartas en mano.
+- Solo puede jugar cartas que posea.
+- Solo puede descartar cartas que posea.
+
+---
+
+# 6. Administrador
+
+Es un manager con permisos adicionales.
+
+## Responsabilidades
+
+- Validar cartas.
+- Devolver cartas.
+- Consultar el historial completo.
+- Gestionar la temporada.
+
+Todo administrador es también un manager.
 
 ---
 
 # 7. Carta
 
-La carta representa una regla especial.
+Representa el diseño de una carta.
 
-Una carta nunca contiene lógica.
+No representa una copia física.
 
-La lógica pertenece al sistema.
+## Propiedades
 
-La carta únicamente describe:
+- Nombre.
+- Apodo.
+- Descripción.
+- Rareza.
+- Tipo.
+- Imagen.
+- Plantilla de WhatsApp.
 
-- nombre
-- descripción
-- rareza
-- efecto
-- restricciones
+## Reglas
 
----
-
-Ejemplo.
-
-Duplicar puntuación
-
-↓
-
-efecto
-
-double_score
+Una carta puede tener varias copias físicas.
 
 ---
 
-# 8. Inventario
+# 8. Copia de Carta
 
-Representa las cartas que posee un manager.
+Representa una carta física del mazo.
 
-Cada carta del inventario posee un estado.
+Esta entidad es la que realmente se reparte entre los managers.
 
-Disponible
+## Propiedades
 
-Pendiente
+- Carta original.
+- Temporada.
+- Estado.
+- Propietario actual.
 
-Aplicada
+## Estados posibles
 
-Archivada
+- En mazo.
+- En mano.
 
----
-
-# 9. Mazo
-
-Representa todas las cartas disponibles durante la temporada.
-
-Cada carta puede existir varias veces.
-
-Cuando una carta se reparte desaparece del mazo.
-
-Cuando una carta termina su efecto vuelve al mazo.
+Cuando una carta se juega o se descarta, la copia vuelve inmediatamente al mazo.
 
 ---
 
-# 10. Acción
+# 9. Mano
 
-Una acción representa una operación iniciada por un usuario.
+La mano representa el conjunto de cartas que posee un manager.
 
-Ejemplos.
+## Reglas
 
-- Jugar carta.
+- Máximo tres cartas.
+- Las cartas se muestran en abanico.
+- Puede ocultarse o mostrarse.
+- Solo pertenece a un manager.
+
+La mano no tiene identidad propia; es una vista de las copias de carta cuyo propietario es el manager.
+
+---
+
+# 10. Mazo
+
+Representa el conjunto de copias de cartas disponibles durante una temporada.
+
+## Responsabilidades
+
 - Repartir cartas.
-- Crear usuario.
-- Aplicar efecto.
+- Recuperar cartas jugadas.
+- Recuperar cartas descartadas.
 
-Una acción puede generar uno o varios eventos.
+## Reglas
+
+- Existe un único mazo por temporada.
+- Todas las copias pertenecen al mazo.
+- El mazo nunca desaparece.
+- Las cartas vuelven inmediatamente tras ser jugadas o descartadas.
 
 ---
 
-# 11. Evento
+# 11. Acción
 
-Un evento representa algo ocurrido dentro del juego.
+Toda operación importante genera una acción.
 
-Ejemplos.
+Ejemplos:
 
-Pedro roba una carta.
+- Carta jugada.
+- Carta descartada.
+- Carta validada.
+- Carta devuelta.
+- Carta repartida.
 
-Juan utiliza una carta.
+## Responsabilidades
 
-Laura recibe dos millones.
+Conservar el historial oficial de la temporada.
 
-Administrador aplica una carta.
-
-Todos ellos son eventos.
+Las acciones nunca se eliminan.
 
 ---
 
 # 12. Historial
 
-El historial almacena todos los eventos.
+El historial es la secuencia cronológica de acciones de una temporada.
 
-Nunca se elimina información.
+Existen tres vistas distintas.
 
-Será la fuente oficial de auditoría.
+## Historial público
 
----
+Visible para todos.
 
-# 13. Configuración
-
-Representa todas las reglas de la competición.
-
-Ejemplos.
-
-Número máximo de cartas.
-
-Hora del reparto.
-
-Número de copias.
-
-Temporada.
-
-Modo mantenimiento.
+Incluye únicamente cartas jugadas.
 
 ---
 
-# 14. Relaciones
+## Historial personal
 
+Visible únicamente para el manager.
+
+Incluye:
+
+- Cartas recibidas.
+- Cartas jugadas.
+- Cartas descartadas.
+- Cartas devueltas.
+
+---
+
+## Historial administrativo
+
+Visible únicamente para administradores.
+
+Incluye todas las acciones registradas.
+# 13. Notificación
+
+Una notificación representa un evento relevante para un manager.
+
+## Responsabilidades
+
+- Informar al usuario.
+- Destacar acciones importantes.
+- Facilitar el acceso rápido a determinados eventos.
+
+## Tipos
+
+- Nueva carta recibida.
+- Carta devuelta.
+- Carta validada.
+- Aviso del administrador.
+
+## Estados
+
+- No leída.
+- Leída.
+
+Las notificaciones nunca se eliminan automáticamente.
+
+---
+
+# 14. Biblioteca
+
+La Biblioteca representa el catálogo completo de cartas existentes.
+
+No contiene cartas físicas.
+
+Únicamente información descriptiva.
+
+## Funciones
+
+Permite consultar:
+
+- Imagen.
+- Nombre.
+- Apodo.
+- Rareza.
+- Descripción.
+- Reglas.
+- Número de copias por temporada.
+
+La Biblioteca no modifica el estado del juego.
+
+---
+
+# 15. Mensaje de WhatsApp
+
+Representa el texto generado automáticamente cuando un manager juega una carta.
+
+## Responsabilidades
+
+- Informar al resto de managers.
+- Estandarizar la comunicación.
+- Facilitar el trabajo del administrador.
+
+Cada carta dispone de una plantilla propia.
+
+Durante la generación se sustituyen automáticamente las variables correspondientes.
+
+Ejemplos:
+
+- Manager.
+- Objetivo.
+- Carta.
+- Jornada (opcional).
+
+El mensaje únicamente se genera.
+
+Nunca se envía automáticamente.
+
+---
+
+# 16. Relaciones del dominio
+
+```text
 Liga
-
-↓
-
-Temporadas
-
-↓
-
-Managers
-
-↓
-
-Inventario
-
-↓
-
-Cartas
-
----------------------
-
-Temporada
-
-↓
-
-Eventos
-
-↓
-
-Historial
-
----------------------
-
-Administrador
-
-↓
-
-Acciones
-
-↓
-
-Eventos
-
-↓
-
-Historial
-
----
-
-# 15. Estados
-
+│
+├──────────────┐
+│              │
+▼              ▼
+Temporadas   Managers
+│              │
+│              │
+│              └────────────┐
+│                           │
+▼                           ▼
+Mazo                      Mano
+│                           │
+│                           │
+▼                           ▼
+Copias de Carta ─────────────┘
+│
+│
+▼
 Carta
-
-Disponible
-
-↓
-
-Pendiente
-
-↓
-
-Aplicada
-
-↓
-
-Archivada
+│
+▼
+Biblioteca
+```
 
 ---
 
-Acción
+## Relaciones principales
 
-Creada
+Una Liga:
 
-↓
+- Tiene muchas temporadas.
+- Tiene muchos managers.
 
-Pendiente
+Una Temporada:
 
-↓
+- Pertenece a una liga.
+- Tiene un único mazo.
+- Tiene muchas acciones.
 
-Aplicada
+Un Manager:
 
-↓
+- Pertenece a una liga.
+- Participa en una temporada.
+- Tiene una mano.
+- Recibe notificaciones.
 
-Cancelada
+Una Carta:
+
+- Puede tener varias copias físicas.
+
+Una Copia:
+
+- Pertenece a una temporada.
+- Puede estar en un mazo.
+- Puede estar en una mano.
 
 ---
+
+# 17. Eventos del dominio
+
+Los eventos representan hechos importantes ocurridos en la aplicación.
+
+## Eventos previstos
+
+- Manager registrado.
+- Inicio de temporada.
+- Fin de temporada.
+- Carta repartida.
+- Carta jugada.
+- Carta descartada.
+- Carta validada.
+- Carta devuelta.
+- Notificación enviada.
+
+Estos eventos podrán utilizarse en el futuro para estadísticas, automatizaciones e integración con Biwenger.
+
+---
+
+# 18. Reglas de negocio
+
+## Liga
+
+- Puede existir una o varias ligas.
+- Todos los datos pertenecen a una liga.
+
+---
+
+## Temporadas
+
+- Solo puede existir una temporada activa.
+- Las temporadas cerradas son de solo lectura.
+
+---
+
+## Managers
+
+- Máximo tres cartas en mano.
+- No pueden jugar cartas ajenas.
+
+---
+
+## Cartas
+
+- Cada copia física es única.
+- Las cartas jugadas vuelven inmediatamente al mazo.
+- Las cartas descartadas vuelven inmediatamente al mazo.
+- Las cartas devueltas vuelven directamente a la mano del manager.
+
+---
+
+## Historial
+
+- Nunca se elimina.
+- Nunca se modifica.
+- Constituye el registro oficial de la temporada.
+
+---
+
+## Notificaciones
+
+- Cada notificación pertenece a un único manager.
+- Solo el propietario puede marcarla como leída.
+
+---
+
+# 19. Agregados del dominio
+
+El dominio se divide en varios agregados principales.
+
+## Liga
+
+Raíz del sistema.
+
+Gestiona:
+
+- Managers.
+- Temporadas.
+
+---
+
+## Temporada
+
+Gestiona:
+
+- Mazo.
+- Acciones.
+- Historial.
+
+---
+
+## Manager
+
+Gestiona:
+
+- Mano.
+- Notificaciones.
+- Historial personal.
+
+---
+
+## Carta
+
+Gestiona:
+
+- Información descriptiva.
+- Plantillas.
+- Rareza.
+
+Las copias físicas dependen de ella.
+
+---
+
+# 20. Invariantes
+
+El sistema debe garantizar siempre:
+
+- Solo una temporada activa.
+- Ningún manager puede tener más de tres cartas.
+- Toda copia pertenece exactamente a una carta.
+- Toda copia pertenece exactamente a una temporada.
+- Ninguna acción puede quedar sin registrar.
+- Una carta solo puede jugarla su propietario.
+- Las cartas nunca desaparecen del sistema.
+
+---
+
+# 21. Modelo conceptual
+
+```text
+                    Liga
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+          ▼                       ▼
+     Temporada               Manager
+          │                       │
+          │                       │
+          ▼                       ▼
+        Mazo                   Mano
+          │                       │
+          └───────────┬───────────┘
+                      ▼
+              Copia de Carta
+                      │
+                      ▼
+                    Carta
+                      │
+                      ▼
+                 Biblioteca
+
+Manager
+│
+├── Notificaciones
+│
+└── Historial Personal
 
 Temporada
-
-Preparación
-
-↓
-
-Activa
-
-↓
-
-Finalizada
-
-↓
-
-Archivada
+│
+└── Historial Público
+```
 
 ---
 
-# 16. Reglas
+# 22. Historial de cambios
 
-Toda modificación del sistema deberá generar un evento.
-
-Todo evento deberá almacenarse en el historial.
-
-Toda carta utilizada deberá generar una acción.
-
-Toda acción deberá poder consultarse posteriormente.
-
----
-
-# 17. Escalabilidad
-
-Este modelo permite incorporar fácilmente.
-
-- Logros
-- Eventos especiales
-- Misiones
-- Recompensas
-- Tienda
-- Integración con Biwenger
-- Estadísticas
-- Ranking histórico
-
-Sin modificar las entidades existentes.
+| Versión | Descripción |
+|----------|-------------|
+| 1.0 | Modelo inicial del dominio. |
