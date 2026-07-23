@@ -1,386 +1,522 @@
 # Documento Funcional
 
-**Proyecto:** Munchinking League Companion
-
-**Versión:** 1.0
-
-**Estado:** En desarrollo
-
----
-
-# 1. Introducción
-
-## 1.1 Objetivo
-
-Munchinking League Companion es una aplicación web diseñada para complementar la experiencia de juego de la Munchinking League.
-
-La aplicación será la plataforma oficial para gestionar todas las reglas personalizadas de la competición que actualmente se realizan manualmente.
-
-No sustituirá a Biwenger.
-
-Biwenger continuará utilizándose para:
-
-- Mercado
-- Plantillas
-- Alineaciones
-- Puntuaciones
-- Clasificación
-
-La aplicación será responsable de gestionar todas las mecánicas adicionales de la liga.
+| Campo | Valor |
+|--------|-------|
+| Proyecto | Munchinking League |
+| Documento | Documento Funcional |
+| Versión | 1.1 |
+| Estado | Aprobado |
+| Última actualización | 23/07/2026 |
 
 ---
 
-## 1.2 Objetivos
+# 1. Objetivo
 
-Los principales objetivos del proyecto son:
+Munchinking League es una aplicación web diseñada para complementar la experiencia de una liga privada de Biwenger mediante un sistema de Cartas Personalizadas.
 
-- Centralizar todas las reglas de la liga.
-- Facilitar el trabajo del administrador.
-- Mejorar la experiencia de los managers.
-- Mantener un historial permanente.
-- Crear una interfaz moderna y atractiva.
-- Permitir futuras ampliaciones.
+La aplicación actúa como el registro oficial de las cartas de la liga, permitiendo a los managers consultar su mano, jugar cartas, generar automáticamente los mensajes para comunicar las acciones por WhatsApp y mantener un historial completo de toda la temporada.
+
+La aplicación **no sustituye Biwenger**, sino que centraliza toda la gestión relacionada con las cartas y sirve como herramienta de apoyo para el administrador de la liga.
 
 ---
 
-# 2. Usuarios
+# 2. Objetivos funcionales
 
-La aplicación tendrá únicamente dos tipos de usuarios.
+La aplicación permitirá:
+
+- Gestionar el reparto semanal de cartas.
+- Consultar la mano de cartas de cada manager.
+- Jugar cartas.
+- Descartar cartas.
+- Consultar el catálogo completo de cartas.
+- Registrar todas las acciones realizadas.
+- Generar automáticamente mensajes para WhatsApp.
+- Facilitar la gestión administrativa de la liga.
+- Conservar el histórico de temporadas anteriores.
+
+---
+
+# 3. Reglas de negocio
+
+## Liga
+
+La aplicación está preparada para soportar múltiples ligas.
+
+En la versión 1.0 únicamente existirá una liga.
+
+Toda la información pertenecerá siempre a una única liga.
+
+---
+
+## Temporadas
+
+La aplicación permitirá almacenar múltiples temporadas.
+
+Sin embargo:
+
+**Solo podrá existir una temporada activa.**
+
+Todas las operaciones realizadas por los managers se ejecutarán siempre sobre la temporada activa.
+
+Las temporadas finalizadas permanecerán en modo consulta.
+
+---
+
+# 4. Roles
 
 ## Manager
 
-Cada manager podrá:
+Puede:
 
 - Iniciar sesión.
 - Consultar sus cartas.
-- Utilizar cartas.
-- Consultar el historial.
-- Consultar la biblioteca de cartas.
-- Consultar eventos.
+- Mostrar u ocultar sus cartas.
+- Jugar cartas.
+- Descartar cartas.
+- Consultar la biblioteca.
+- Consultar el historial público.
+- Consultar su historial personal.
+- Recibir notificaciones.
 
 ---
 
 ## Administrador
 
-Además de todas las funciones del manager, podrá:
+Además de todas las funciones del Manager:
 
-- Crear usuarios.
-- Eliminar usuarios.
-- Modificar usuarios.
-- Repartir cartas.
-- Aplicar efectos.
-- Resolver acciones pendientes.
-- Reiniciar temporadas.
-- Configurar el mazo.
-- Consultar estadísticas.
+- Consultar todas las acciones.
+- Validar cartas jugadas.
+- Devolver cartas mal jugadas.
+- Consultar el historial administrativo.
+- Gestionar el reparto semanal.
+- Enviar notificaciones.
 
 ---
 
-# 3. Módulos
-
-La aplicación estará dividida en varios módulos independientes.
+# 5. Pantallas principales
 
 ## Login
 
-Permite autenticar a los usuarios.
-
-Funciones:
-
-- Inicio de sesión.
-- Cierre de sesión.
-- Recuperación de contraseña (futuro).
+Permite acceder a la aplicación.
 
 ---
 
-## Dashboard
+## Inicio
 
 Pantalla principal.
 
-Mostrará:
+Contiene:
 
-- Cartas disponibles.
-- Acciones pendientes.
-- Últimos eventos.
-- Noticias de la liga.
-
----
-
-## Mis Cartas
-
-Será el módulo principal de la aplicación.
-
-Permitirá:
-
-- Ver cartas disponibles.
-- Consultar información.
-- Utilizar cartas.
-- Ver restricciones.
-- Consultar fecha de obtención.
-
-Cada carta deberá disponer de una representación visual propia.
+- Notificaciones.
+- Avatar.
+- Mano de cartas.
+- Historial público.
+- Menú inferior.
 
 ---
 
 ## Biblioteca
 
-Contendrá todas las cartas existentes.
-
-Cada ficha incluirá:
-
-- Nombre.
-- Rareza.
-- Descripción.
-- Reglas.
-- Momento de utilización.
-- Imagen.
-- Copias existentes.
+Catálogo completo de cartas.
 
 ---
 
 ## Historial
 
-Registro permanente de todas las acciones realizadas.
+Dependiendo del usuario mostrará:
 
-Cada entrada almacenará:
+- Público.
+- Personal.
+- Administrativo.
 
-- Fecha.
-- Usuario.
-- Acción.
-- Resultado.
-- Estado.
+---
 
-El historial nunca será eliminado.
+## Perfil
+
+Información del manager.
 
 ---
 
 ## Administración
 
-Panel exclusivo para administradores.
-
-Permitirá gestionar toda la competición.
+Funciones exclusivas para administradores.
 
 ---
 
-# 4. Sistema de Cartas
+# 6. Pantalla principal
 
-El mazo será único para toda la competición.
+La Home gira completamente alrededor de las cartas.
 
-Cada carta tendrá un número determinado de copias.
+## Distribución
 
-Las cartas serán repartidas automáticamente.
+### Cabecera
 
-Cada manager podrá almacenar un máximo de tres cartas.
+- Botón de notificaciones.
+- Avatar.
 
-Cada lunes se repartirá automáticamente una nueva carta hasta alcanzar dicho límite.
+### Zona principal
 
-Cuando una carta sea utilizada desaparecerá del inventario del usuario.
+- Mano de cartas en abanico.
 
-Volverá al mazo para poder aparecer nuevamente en futuras jornadas.
+### Zona inferior
 
----
+Historial público en scroll horizontal.
 
-# 5. Flujo de utilización
+### Pie
 
-El flujo habitual será:
+Menú inferior fijo.
 
-Manager
-
-↓
-
-Accede a la aplicación
-
-↓
-
-Consulta sus cartas
-
-↓
-
-Selecciona una carta
-
-↓
-
-Elige objetivo (si procede)
-
-↓
-
-Confirma la acción
-
-↓
-
-La carta pasa a estado:
-
-Pendiente
-
-↓
-
-El administrador recibe la acción
-
-↓
-
-Aplica el efecto en Biwenger
-
-↓
-
-Marca la acción como:
-
-Aplicada
-
-↓
-
-El historial se actualiza
+Este menú estará presente en todas las pantallas.
 
 ---
 
-# 6. Estados de una carta
+# 7. Mano de cartas
 
-Las cartas podrán encontrarse en los siguientes estados:
+La mano constituye el elemento principal de la aplicación.
 
-Disponible
+## Características
 
-Carta almacenada por el manager.
-
----
-
-Pendiente
-
-Carta utilizada.
-
-Esperando la aplicación por parte del administrador.
+- Cartas en abanico.
+- Apertura automática según el número de cartas.
+- Máximo de tres cartas.
+- Cartas inicialmente boca abajo.
+- Botón con icono de ojo para mostrar u ocultar.
+- El estado de visibilidad se mantiene durante la sesión.
 
 ---
 
-Aplicada
+## Selección
 
-El efecto ha sido ejecutado.
+Al pulsar una carta:
+
+- Se sitúa en primer plano.
+- Aumenta de tamaño.
+- Se muestran sus datos.
+- Aparecen las acciones disponibles.
+
+Acciones:
+
+- Jugar.
+- Descartar.
+- Cerrar.
 
 ---
 
-Archivada
+# 8. Jugar una carta
 
-Carta utilizada e incorporada al historial.
+Flujo:
+
+1. Seleccionar carta.
+2. Pulsar "Jugar".
+3. Elegir objetivo (si procede).
+4. Confirmar.
+
+La aplicación:
+
+- Registra la acción.
+- Cambia el estado de la carta a **Jugada**.
+- Genera automáticamente un mensaje para WhatsApp.
+- Permite copiar dicho mensaje al portapapeles.
+
+El usuario será responsable de enviarlo al grupo oficial de WhatsApp.
 
 ---
 
-# 7. Historial
+## Objetivos
 
-Todas las acciones deberán quedar registradas.
+Dependiendo de la carta podrán seleccionarse:
 
-Ejemplos:
+- Ningún objetivo.
+- Un manager.
+- Un jugador.
 
-- Obtención de carta.
-- Uso de carta.
-- Aplicación de carta.
-- Cancelación.
-- Reparto semanal.
+---
+
+# 9. Descartar una carta
+
+Flujo:
+
+1. Seleccionar carta.
+2. Pulsar "Descartar".
+3. Confirmar.
+
+La carta:
+
+- Desaparece de la mano.
+- Cambia al estado **Descartada**.
+
+No aparecerá en el historial público.
+
+---
+
+# 10. Mensajes para WhatsApp
+
+Cada carta dispondrá de una plantilla de mensaje.
+
+La aplicación sustituirá automáticamente las variables correspondientes.
+
+Ejemplo:
+
+- Manager.
+- Carta.
+- Objetivo.
+- Acción.
+
+El mensaje podrá copiarse directamente.
+
+La aplicación nunca enviará mensajes automáticamente.
+
+---
+
+# 11. Historial
+
+## Historial público
+
+Visible para todos los managers.
+
+Mostrará únicamente cartas jugadas.
+
+No mostrará:
+
+- Cartas recibidas.
+- Cartas descartadas.
+- Cartas devueltas.
 - Acciones administrativas.
 
-El historial deberá permitir filtros por:
-
-- Usuario.
-- Fecha.
-- Carta.
-- Tipo de acción.
+La visualización será mediante desplazamiento horizontal.
 
 ---
 
-# 8. Requisitos funcionales
+## Historial personal
 
-RF-001
+Visible únicamente para cada manager.
 
-El usuario deberá poder iniciar sesión.
+Mostrará:
 
-RF-002
+- Cartas recibidas.
+- Cartas jugadas.
+- Cartas descartadas.
+- Cartas devueltas.
+- Estado de cada carta.
 
-El usuario deberá poder cerrar sesión.
+Será un registro completo de todas las acciones del usuario.
+## Historial administrativo
 
-RF-003
+Visible únicamente para los administradores.
 
-El usuario deberá consultar su inventario.
+Mostrará:
 
-RF-004
+- Todas las cartas jugadas.
+- Todas las cartas descartadas.
+- Todas las cartas devueltas.
+- Todas las cartas validadas.
 
-El usuario deberá consultar la biblioteca.
-
-RF-005
-
-El usuario deberá utilizar una carta.
-
-RF-006
-
-El administrador deberá aplicar una carta.
-
-RF-007
-
-El administrador deberá repartir cartas.
-
-RF-008
-
-El sistema deberá mantener un historial permanente.
-
-RF-009
-
-El sistema deberá impedir almacenar más de tres cartas.
-
-RF-010
-
-Cada lunes se repartirá automáticamente una carta a todos los managers que tengan menos de tres.
+Permitirá localizar rápidamente cualquier acción realizada durante la temporada.
 
 ---
 
-# 9. Requisitos no funcionales
+# 12. Biblioteca
 
-- Compatible con dispositivos móviles.
-- Diseño responsive.
-- Interfaz moderna.
-- Tiempo de carga inferior a dos segundos.
-- Preparado para animaciones.
-- Preparado para futuras integraciones con Biwenger.
+La biblioteca contendrá el catálogo completo de cartas disponibles en la liga.
 
----
+Cada carta mostrará:
 
-# 10. Objetivos de la versión 1.0
+- Imagen.
+- Nombre.
+- Apodo.
+- Rareza.
+- Descripción.
+- Reglas de uso.
+- Número de copias existentes en el mazo.
 
-La primera versión incluirá:
+## Funciones
 
-✅ Login
+La biblioteca permitirá:
 
-✅ Dashboard
+- Buscar cartas.
+- Filtrar por rareza.
+- Consultar la descripción.
+- Consultar las reglas de uso.
 
-✅ Inventario de cartas
-
-✅ Biblioteca
-
-✅ Historial
-
-✅ Administración
-
-No incluirá:
-
-❌ Integración automática con Biwenger.
-
-❌ Animaciones.
-
-❌ Notificaciones push.
-
-❌ Tienda.
-
-❌ Logros.
+No será posible jugar cartas desde esta pantalla.
 
 ---
 
-# 11. Visión futura
+# 13. Notificaciones
 
-La arquitectura deberá permitir incorporar nuevos módulos sin modificar los existentes.
+La aplicación dispondrá de un centro de notificaciones accesible desde cualquier pantalla mediante un icono situado en la esquina superior izquierda.
 
-Algunas funcionalidades previstas son:
+El icono mostrará un contador con el número de notificaciones pendientes, hasta un máximo visual de **9+**.
 
-- Estadísticas históricas.
-- Sistema de logros.
-- Perfil de manager.
-- Ranking histórico.
-- Temporadas.
-- Eventos especiales.
-- Tienda.
-- Integración parcial con Biwenger.
+## Tipos de notificaciones
+
+- Nueva carta recibida.
+- Carta validada.
+- Carta devuelta.
+- Aviso del administrador.
+
+---
+
+## Reparto semanal
+
+Cada lunes, todos los managers que tengan menos de tres cartas en mano recibirán automáticamente una nueva carta.
+
+El reparto generará una notificación.
+
+Al abrir dicha notificación se reproducirá una animación donde el usuario descubrirá visualmente la nueva carta.
+
+Una vez finalizada la animación, la carta pasará automáticamente a la mano del manager.
+
+El reparto semanal no aparecerá en el historial público.
+
+---
+
+# 14. Administración
+
+Los administradores dispondrán de un panel específico para gestionar la temporada.
+
+## Funciones
+
+- Consultar acciones jugadas.
+- Consultar acciones descartadas.
+- Consultar acciones validadas.
+- Consultar acciones devueltas.
+- Validar cartas.
+- Devolver cartas mal jugadas.
+- Consultar el historial completo de la temporada.
+
+Cuando una carta sea devuelta:
+
+- Desaparecerá del historial de cartas jugadas.
+- Volverá automáticamente a la mano del manager.
+- El manager recibirá una notificación.
+
+La aplicación del efecto correspondiente sobre Biwenger continuará realizándose manualmente.
+
+---
+
+# 15. Estados de una carta
+
+Cada copia física de una carta podrá encontrarse en uno de los siguientes estados:
+
+- En el mazo.
+- En mano.
+- Jugada.
+- Validada.
+- Devuelta.
+- Descartada.
+
+Todos los cambios de estado quedarán registrados permanentemente en el historial de la temporada.
+
+---
+
+# 16. Reparto de cartas
+
+Las cartas pertenecen siempre al mazo de la temporada activa.
+
+Cada copia física es única.
+
+Cuando un manager recibe una carta:
+
+1. Se extrae una copia física del mazo.
+2. Se asigna al manager.
+3. Se registra la acción.
+4. Se genera una notificación.
+
+Cuando una carta deja de estar disponible (por jugarse o descartarse), volverá al mazo siguiendo las reglas definidas para la temporada.
+
+---
+
+# 17. Validación de cartas
+
+La aplicación no comprobará automáticamente si una carta ha sido jugada en el momento correcto respecto a la jornada de Biwenger.
+
+La validez de una jugada será responsabilidad del administrador de la liga.
+
+En caso de detectar una jugada incorrecta, el administrador podrá devolver la carta al manager correspondiente.
+
+---
+
+# 18. Integración con Biwenger
+
+La versión 1.0 de Munchinking League no realizará modificaciones automáticas sobre Biwenger.
+
+La aplicación actuará como:
+
+- Registro oficial de cartas.
+- Generador de mensajes para WhatsApp.
+- Historial oficial de la temporada.
+
+La arquitectura quedará preparada para una futura integración con la API oficial de Biwenger en caso de que sea posible.
+
+---
+
+# 19. Requisitos no funcionales
+
+La aplicación deberá cumplir los siguientes requisitos:
+
+## Experiencia de usuario
+
+- Optimizada para dispositivos móviles.
+- Responsive.
+- Navegación intuitiva.
+- Interfaz clara y visual.
+- Preparada para futuras animaciones.
+
+## Rendimiento
+
+- Tiempo de carga reducido.
+- Respuesta inmediata en las acciones habituales.
+- Consumo mínimo de recursos.
+
+## Seguridad
+
+- Acceso autenticado.
+- Gestión de permisos según el rol.
+- Protección frente a acciones no autorizadas.
+
+## Escalabilidad
+
+La arquitectura deberá permitir:
+
+- Añadir nuevas cartas.
+- Añadir nuevas temporadas.
+- Gestionar múltiples ligas en el futuro.
+- Integrarse con servicios externos sin modificar el modelo principal.
+
+---
+
+# 20. Alcance del MVP
+
+La versión 1.0 incluirá:
+
+- Inicio de sesión.
+- Gestión de managers.
+- Mano de cartas.
+- Biblioteca.
+- Historial público.
+- Historial personal.
 - Notificaciones.
-- Aplicación móvil.
+- Reparto semanal.
+- Administración.
+- Generación de mensajes para WhatsApp.
+
+Quedan fuera del MVP:
+
+- Integración automática con Biwenger.
+- Validación automática según jornadas.
+- Aplicación automática de efectos.
+- Sonidos.
+- Logros.
+- Estadísticas avanzadas.
+- Eventos especiales.
+- Chat entre managers.
+
+---
+
+# 21. Historial de cambios
+
+| Versión | Descripción |
+|----------|-------------|
+| 1.0 | Documento funcional inicial. |
+| 1.1 | Actualización completa del MVP, incorporación del sistema de temporadas, mano de cartas en abanico, historial personal, flujo de WhatsApp, reparto semanal, administración y preparación para múltiples ligas. |
