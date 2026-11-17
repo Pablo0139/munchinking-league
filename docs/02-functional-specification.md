@@ -1,13 +1,13 @@
 # Especificación Funcional
 
-| Campo | Valor |
-|--------|-------|
-| Proyecto | Munchinking League |
-| Documento | Especificación Funcional |
-| Archivo | `02-functional-specification.md` |
-| Versión | 1.1 |
-| Estado | APPROVED |
-| Última actualización | 17/11/2026 |
+| Campo                | Valor                            |
+| -------------------- | -------------------------------- |
+| Proyecto             | Munchinking League               |
+| Documento            | Especificación Funcional         |
+| Archivo              | `02-functional-specification.md` |
+| Versión              | 1.1                              |
+| Estado               | APPROVED                         |
+| Última actualización | 17/11/2026                       |
 
 ---
 
@@ -257,6 +257,7 @@ Cuando un manager reciba una carta:
 - La aplicación podrá mostrar una animación de apertura de sobre o reparto de carta.
 
 La recepción de cartas no aparecerá en el historial público.
+
 # 6. Pantallas
 
 La aplicación estará compuesta por seis pantallas principales.
@@ -621,6 +622,7 @@ Resultado esperado:
 La carta vuelve a la mano del manager.
 
 El sistema registra el movimiento correspondiente.
+
 # 8. Reglas funcionales
 
 Las siguientes reglas definen el funcionamiento del juego durante una temporada.
@@ -882,6 +884,7 @@ Todos los movimientos quedarán registrados según su fecha y hora.
 El historial de la aplicación se construirá a partir de los movimientos registrados.
 
 No existirá un historial independiente.
+
 # 13. Mensajes de WhatsApp
 
 Cuando un manager juegue una carta, la aplicación generará automáticamente un mensaje con el formato adecuado para ser compartido en el grupo de WhatsApp de la liga.
@@ -1070,7 +1073,7 @@ La evolución funcional prevista para la aplicación será la siguiente.
 
 # 18. Historial de cambios
 
-| Versión | Descripción |
-|----------|-------------|
-| 1.0 | Primera versión de la especificación funcional del MVP de Munchinking League. |
-| 1.1 | Precisión sobre captura de objetivos al jugar cartas, pestañas Público/Personal en Historial, devolución administrativa referenciada a `movementId` respetando límite de mano e idempotencia semanal del reparto. |
+| Versión | Descripción                                                                                                                                                                                                       |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | Primera versión de la especificación funcional del MVP de Munchinking League.                                                                                                                                     |
+| 1.1     | Precisión sobre captura de objetivos al jugar cartas, pestañas Público/Personal en Historial, devolución administrativa referenciada a `movementId` respetando límite de mano e idempotencia semanal del reparto. |

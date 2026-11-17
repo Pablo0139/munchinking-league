@@ -1,0 +1,54 @@
+name = "munchinking-api"
+main = "apps/api/src/index.ts"
+compatibility_date = "2026-04-01"
+
+[vars]
+APP_TIMEZONE = "Europe/Madrid"
+APP_ORIGIN = "http://localhost:5173"
+
+[triggers]
+crons = ["0 7 * * MON"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "munchinking-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "db/migrations"
+
+[[r2_buckets]]
+binding = "ASSETS_BUCKET"
+bucket_name = "munchinking-assets"
+
+[env.staging]
+name = "munchinking-api-staging"
+
+[env.staging.vars]
+APP_TIMEZONE = "Europe/Madrid"
+APP_ORIGIN = "https://develop.munchinking-league.pages.dev"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "munchinking-db-staging"
+database_id = "00000000-0000-0000-0000-000000000001"
+migrations_dir = "db/migrations"
+
+[[env.staging.r2_buckets]]
+binding = "ASSETS_BUCKET"
+bucket_name = "munchinking-assets-staging"
+
+[env.production]
+name = "munchinking-api"
+
+[env.production.vars]
+APP_TIMEZONE = "Europe/Madrid"
+APP_ORIGIN = "https://munchinking-league.pages.dev"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "munchinking-db"
+database_id = "00000000-0000-0000-0000-000000000002"
+migrations_dir = "db/migrations"
+
+[[env.production.r2_buckets]]
+binding = "ASSETS_BUCKET"
+bucket_name = "munchinking-assets"

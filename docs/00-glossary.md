@@ -1,13 +1,13 @@
 # Glosario
 
-| Campo | Valor |
-|--------|-------|
-| Proyecto | Munchinking League |
-| Documento | Glosario |
-| Archivo | `00-glossary.md` |
-| Versión | 1.1 |
-| Estado | FROZEN |
-| Última actualización | 17/11/2026 |
+| Campo                | Valor              |
+| -------------------- | ------------------ |
+| Proyecto             | Munchinking League |
+| Documento            | Glosario           |
+| Archivo              | `00-glossary.md`   |
+| Versión              | 1.1                |
+| Estado               | FROZEN             |
+| Última actualización | 17/11/2026         |
 
 ---
 
@@ -281,7 +281,7 @@ Para mantener la consistencia del proyecto:
 
 # 7. Historial de cambios
 
-| Versión | Descripción |
-|----------|-------------|
-| 1.0 | Primera versión congelada del glosario del proyecto. |
-| 1.1 | Alineación explícita entre `Card Location` persistida (`DECK`, `HAND`), `Movement Type` histórico (`DISTRIBUTED`, `PLAYED`, `DISCARDED`, `RETURNED`), `DistributionBatch` y `TargetType`. |
+| Versión | Descripción                                                                                                                                                                               |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | Primera versión congelada del glosario del proyecto.                                                                                                                                      |
+| 1.1     | Alineación explícita entre `Card Location` persistida (`DECK`, `HAND`), `Movement Type` histórico (`DISTRIBUTED`, `PLAYED`, `DISCARDED`, `RETURNED`), `DistributionBatch` y `TargetType`. |

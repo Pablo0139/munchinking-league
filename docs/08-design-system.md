@@ -1,13 +1,13 @@
 # Sistema de Diseño y Experiencia de Usuario
 
-| Campo | Valor |
-|--------|-------|
-| Proyecto | Munchinking League |
-| Documento | Sistema de Diseño y Experiencia de Usuario |
-| Archivo | `08-design-system.md` |
-| Versión | 1.0 |
-| Estado | APPROVED |
-| Última actualización | 17/11/2026 |
+| Campo                | Valor                                      |
+| -------------------- | ------------------------------------------ |
+| Proyecto             | Munchinking League                         |
+| Documento            | Sistema de Diseño y Experiencia de Usuario |
+| Archivo              | `08-design-system.md`                      |
+| Versión              | 1.0                                        |
+| Estado               | APPROVED                                   |
+| Última actualización | 17/11/2026                                 |
 
 ---
 
@@ -38,36 +38,36 @@ La aplicación debe combinar **claridad de lectura en móvil** con **sensación 
 
 ## 3.1 Superficies y texto
 
-| Token | Hex | Uso principal |
-|-------|-----|---------------|
-| `--bg-canvas` | `#F7F5FB` | Fondo general claro con matiz lavanda muy sutil |
-| `--bg-surface` | `#FFFFFF` | Tarjetas de interfaz, paneles, modales y barra inferior |
-| `--bg-elevated` | `#EFEAF8` | Chips activos, cabeceras secundarias y estados seleccionados |
-| `--border-subtle` | `#DFD7F0` | Bordes suaves de contenedores y divisores |
-| `--text-primary` | `#1B1429` | Títulos, nombres de cartas y cuerpo principal (contraste AAA) |
-| `--text-secondary` | `#594F6E` | Metadatos, fechas, apodos y ayudas contextuales |
+| Token              | Hex       | Uso principal                                                 |
+| ------------------ | --------- | ------------------------------------------------------------- |
+| `--bg-canvas`      | `#F7F5FB` | Fondo general claro con matiz lavanda muy sutil               |
+| `--bg-surface`     | `#FFFFFF` | Tarjetas de interfaz, paneles, modales y barra inferior       |
+| `--bg-elevated`    | `#EFEAF8` | Chips activos, cabeceras secundarias y estados seleccionados  |
+| `--border-subtle`  | `#DFD7F0` | Bordes suaves de contenedores y divisores                     |
+| `--text-primary`   | `#1B1429` | Títulos, nombres de cartas y cuerpo principal (contraste AAA) |
+| `--text-secondary` | `#594F6E` | Metadatos, fechas, apodos y ayudas contextuales               |
 
 ## 3.2 Identidad y estados semánticos
 
-| Token | Hex | Uso principal |
-|-------|-----|---------------|
-| `--brand-primary` | `#6D28D9` | Botones primarios (`Jugar`), pestaña activa, foco e identidad |
-| `--brand-primary-hover` | `#5B21B6` | Estado hover / pressed del primario |
-| `--brand-accent` | `#A855F7` | Destellos de apertura de sobre, degradados de cabecera y reverso |
-| `--status-success` | `#15803D` | Confirmación de jugada y copiado a WhatsApp |
-| `--status-warning` | `#B45309` | Avisos de mano completa (`3/3`) o confirmaciones |
-| `--status-danger` | `#BE123C` | Acción destructiva (`Descartar`), errores y jugadas devueltas |
+| Token                   | Hex       | Uso principal                                                    |
+| ----------------------- | --------- | ---------------------------------------------------------------- |
+| `--brand-primary`       | `#6D28D9` | Botones primarios (`Jugar`), pestaña activa, foco e identidad    |
+| `--brand-primary-hover` | `#5B21B6` | Estado hover / pressed del primario                              |
+| `--brand-accent`        | `#A855F7` | Destellos de apertura de sobre, degradados de cabecera y reverso |
+| `--status-success`      | `#15803D` | Confirmación de jugada y copiado a WhatsApp                      |
+| `--status-warning`      | `#B45309` | Avisos de mano completa (`3/3`) o confirmaciones                 |
+| `--status-danger`       | `#BE123C` | Acción destructiva (`Descartar`), errores y jugadas devueltas    |
 
 ## 3.3 Sistema accesible de rarezas (Color + Forma)
 
 Cada rareza combina color propio, etiqueta textual y emblema geométrico en la **esquina inferior izquierda** de la carta:
 
-| Rareza (`rarity`) | Etiqueta UI | Color principal | Borde / Brillo | Forma geométrica |
-|-------------------|-------------|-----------------|----------------|------------------|
-| `COMMON` | Común | `#64748B` (Pizarra) | Borde neutro mate | Círculo `●` |
-| `RARE` | Rara | `#0284C7` (Azul zafiro) | Borde azul satinado | Rombo `◆` |
-| `EPIC` | Épica | `#7C3AED` (Morado amatista) | Borde morado con halo suave | Hexágono `⬡` |
-| `LEGENDARY` | Legendaria | `#D97706` (Oro ámbar) | Borde dorado con reflejo sutil | Estrella de 4 puntas `✦` |
+| Rareza (`rarity`) | Etiqueta UI | Color principal             | Borde / Brillo                 | Forma geométrica         |
+| ----------------- | ----------- | --------------------------- | ------------------------------ | ------------------------ |
+| `COMMON`          | Común       | `#64748B` (Pizarra)         | Borde neutro mate              | Círculo `●`              |
+| `RARE`            | Rara        | `#0284C7` (Azul zafiro)     | Borde azul satinado            | Rombo `◆`                |
+| `EPIC`            | Épica       | `#7C3AED` (Morado amatista) | Borde morado con halo suave    | Hexágono `⬡`             |
+| `LEGENDARY`       | Legendaria  | `#D97706` (Oro ámbar)       | Borde dorado con reflejo sutil | Estrella de 4 puntas `✦` |
 
 ---
 
@@ -117,12 +117,12 @@ Proporción estándar fija: **`5 : 7`** (`aspect-[5/7]`), bordes redondeados `16
 
 ## Geometría del abanico en `/home`
 
-| Cartas en mano | Rotación por carta | Desplazamiento horizontal | Elevación central |
-|----------------|--------------------|---------------------------|-------------------|
-| `0` cartas | Estado vacío ilustrado ("Sin cartas en mano · Próximo reparto el lunes") | — | — |
-| `1` carta | `0°` | `0 px` | `0 px` |
-| `2` cartas | `-6°`, `+6°` | `-44 px`, `+44 px` | `0 px` |
-| `3` cartas | `-11°`, `0°`, `+11°` | `-76 px`, `0 px`, `+76 px` | Carta central `-10 px` en eje Y |
+| Cartas en mano | Rotación por carta                                                       | Desplazamiento horizontal  | Elevación central               |
+| -------------- | ------------------------------------------------------------------------ | -------------------------- | ------------------------------- |
+| `0` cartas     | Estado vacío ilustrado ("Sin cartas en mano · Próximo reparto el lunes") | —                          | —                               |
+| `1` carta      | `0°`                                                                     | `0 px`                     | `0 px`                          |
+| `2` cartas     | `-6°`, `+6°`                                                             | `-44 px`, `+44 px`         | `0 px`                          |
+| `3` cartas     | `-11°`, `0°`, `+11°`                                                     | `-76 px`, `0 px`, `+76 px` | Carta central `-10 px` en eje Y |
 
 ## Catálogo de transiciones
 
@@ -140,12 +140,12 @@ Proporción estándar fija: **`5 : 7`** (`aspect-[5/7]`), bordes redondeados `16
   - `display: "standalone"`
   - `theme_color: "#6D28D9"`
   - `background_color: "#F7F5FB"`
-  - Iconos `192x192`, `512x512` y `maskable` para instalación directa en iOS y Android sin pasar por tiendas. *(Sin caché offline de mutaciones, acorde a las restricciones del MVP).*
+  - Iconos `192x192`, `512x512` y `maskable` para instalación directa en iOS y Android sin pasar por tiendas. _(Sin caché offline de mutaciones, acorde a las restricciones del MVP)._
 
 ---
 
 # 8. Historial de cambios
 
-| Versión | Descripción |
-|----------|-------------|
-| 1.0 | Definición inicial completa del sistema de diseño, paleta, anatomía de cartas, rarezas accesibles, geometría del abanico y PWA. |
+| Versión | Descripción                                                                                                                     |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | Definición inicial completa del sistema de diseño, paleta, anatomía de cartas, rarezas accesibles, geometría del abanico y PWA. |

@@ -1,0 +1,26 @@
+{
+  "name": "@munchinking/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./schema": "./schema/index.ts",
+    "./seed": "./seed/cards.seed.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "generate": "drizzle-kit generate",
+    "seed:sql": "tsx seed/dev.seed.ts"
+  },
+  "dependencies": {
+    "@munchinking/shared": "workspace:*",
+    "drizzle-orm": "^0.41.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250410.0",
+    "@types/node": "^22.14.1",
+    "drizzle-kit": "^0.30.6"
+  }
+}

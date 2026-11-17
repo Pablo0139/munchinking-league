@@ -18,14 +18,14 @@
 
 ## Stack tecnológico (100% Free Tier)
 
-| Capa | Tecnología |
-|------|------------|
-| Frontend | React + TypeScript + Vite + Tailwind CSS + TanStack Router + TanStack Query |
-| API / Contratos | tRPC (tipado extremo a extremo) + Zod |
-| Backend Serverless | Cloudflare Workers (incluye Cron Trigger semanal) |
-| Persistencia | Cloudflare D1 (SQLite) + Drizzle ORM |
-| Recursos gráficos | Cloudflare R2 |
-| Hosting Frontend | Cloudflare Pages |
+| Capa               | Tecnología                                                                  |
+| ------------------ | --------------------------------------------------------------------------- |
+| Frontend           | React + TypeScript + Vite + Tailwind CSS + TanStack Router + TanStack Query |
+| API / Contratos    | tRPC (tipado extremo a extremo) + Zod                                       |
+| Backend Serverless | Cloudflare Workers (incluye Cron Trigger semanal)                           |
+| Persistencia       | Cloudflare D1 (SQLite) + Drizzle ORM                                        |
+| Recursos gráficos  | Cloudflare R2                                                               |
+| Hosting Frontend   | Cloudflare Pages                                                            |
 
 ---
 

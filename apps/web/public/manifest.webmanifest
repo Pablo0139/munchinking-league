@@ -1,0 +1,10 @@
+{
+  "name": "Munchinking League",
+  "short_name": "Munchinking",
+  "description": "Gestión oficial de cartas personalizadas de la Munchinking League",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F5FB",
+  "theme_color": "#6D28D9",
+  "lang": "es"
+}

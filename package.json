@@ -1,0 +1,36 @@
+{
+  "name": "munchinking-league",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev:web": "corepack pnpm --filter @munchinking/web dev",
+    "dev:api": "corepack pnpm --filter @munchinking/api dev",
+    "build": "corepack pnpm -r build",
+    "typecheck": "corepack pnpm -r typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "corepack pnpm --filter @munchinking/db generate",
+    "db:migrate:local": "wrangler d1 migrations apply munchinking-db --local",
+    "db:seed:local": "corepack pnpm --filter @munchinking/db seed:sql && wrangler d1 execute munchinking-db --local --file=db/.generated/dev.seed.sql",
+    "db:setup:local": "corepack pnpm db:migrate:local && corepack pnpm db:seed:local"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@types/node": "^22.14.1",
+    "eslint": "^9.25.0",
+    "prettier": "^3.5.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vitest": "^3.1.2",
+    "wrangler": "^4.13.0"
+  }
+}

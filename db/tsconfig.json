@@ -1,0 +1,9 @@
+{
+  "extends": "../packages/config/tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "types": ["node", "@cloudflare/workers-types"]
+  },
+  "include": ["index.ts", "drizzle.config.ts", "schema/**/*.ts", "seed/**/*.ts"]
+}

@@ -1,13 +1,13 @@
 # Modelo de Dominio
 
-| Campo | Valor |
-|--------|-------|
-| Proyecto | Munchinking League |
-| Documento | Modelo de Dominio |
-| Archivo | `04-domain-model.md` |
-| Versión | 1.1 |
-| Estado | APPROVED |
-| Última actualización | 17/11/2026 |
+| Campo                | Valor                |
+| -------------------- | -------------------- |
+| Proyecto             | Munchinking League   |
+| Documento            | Modelo de Dominio    |
+| Archivo              | `04-domain-model.md` |
+| Versión              | 1.1                  |
+| Estado               | APPROVED             |
+| Última actualización | 17/11/2026           |
 
 ---
 
@@ -256,6 +256,7 @@ Representa un aviso dirigido a un Manager.
 - Mostrar el contador de notificaciones.
 
 Cada Notification pertenece únicamente a un Manager.
+
 # 5. Relaciones entre entidades
 
 Las entidades del dominio mantienen las siguientes relaciones.
@@ -560,7 +561,7 @@ Este diagrama representa las relaciones principales del dominio y servirá como 
 
 # 12. Historial de cambios
 
-| Versión | Descripción |
-|----------|-------------|
-| 1.0 | Primera versión del modelo de dominio de Munchinking League. |
-| 1.1 | Incorporación de atributos completos de `CardDefinition` (`usageRules`, `targetType`, `defaultCopies`), contexto enriquecido en `CardMovement`, entidad `DistributionBatch` y alineación del ciclo `DECK`/`HAND`. |
+| Versión | Descripción                                                                                                                                                                                                       |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | Primera versión del modelo de dominio de Munchinking League.                                                                                                                                                      |
+| 1.1     | Incorporación de atributos completos de `CardDefinition` (`usageRules`, `targetType`, `defaultCopies`), contexto enriquecido en `CardMovement`, entidad `DistributionBatch` y alineación del ciclo `DECK`/`HAND`. |

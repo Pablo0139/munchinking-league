@@ -1,0 +1,25 @@
+{
+  "name": "@munchinking/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./router": "./src/routers/index.ts"
+  },
+  "scripts": {
+    "dev": "wrangler dev --config ../../wrangler.toml",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@munchinking/db": "workspace:*",
+    "@munchinking/domain": "workspace:*",
+    "@munchinking/shared": "workspace:*",
+    "@trpc/server": "^11.1.0",
+    "drizzle-orm": "^0.41.0",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250410.0"
+  }
+}

@@ -1,13 +1,13 @@
 # Arquitectura
 
-| Campo | Valor |
-|--------|-------|
-| Proyecto | Munchinking League |
-| Documento | Arquitectura |
-| Archivo | `03-architecture.md` |
-| Versión | 1.1 |
-| Estado | APPROVED |
-| Última actualización | 17/11/2026 |
+| Campo                | Valor                |
+| -------------------- | -------------------- |
+| Proyecto             | Munchinking League   |
+| Documento            | Arquitectura         |
+| Archivo              | `03-architecture.md` |
+| Versión              | 1.1                  |
+| Estado               | APPROVED             |
+| Última actualización | 17/11/2026           |
 
 ---
 
@@ -343,6 +343,7 @@ Incluye:
 - Servicios de autenticación.
 
 El resto de capas accederán a estos servicios únicamente a través de interfaces bien definidas.
+
 # 6. Arquitectura del Frontend
 
 El frontend será una Single Page Application (SPA) desarrollada con React y TypeScript.
@@ -719,6 +720,7 @@ Cloudflare D1
 Las respuestas seguirán exactamente el camino inverso.
 
 No existirán accesos directos entre el cliente y la base de datos.
+
 # 11. Seguridad
 
 La seguridad de la aplicación se basará en el principio de mínimo privilegio.
@@ -946,7 +948,7 @@ No existirán modificaciones silenciosas del estado de una carta.
 
 # 16. Historial de cambios
 
-| Versión | Descripción |
-|----------|-------------|
-| 1.0 | Primera versión de la arquitectura de Munchinking League. |
-| 1.1 | Unificación de directorios con `07-project-structure.md`, especificación de seguridad de sesiones/PBKDF2 en Workers, atomicidad en Cloudflare D1 (`batch` + bloqueo optimista) y Cron Trigger semanal idempotente. |
+| Versión | Descripción                                                                                                                                                                                                        |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0     | Primera versión de la arquitectura de Munchinking League.                                                                                                                                                          |
+| 1.1     | Unificación de directorios con `07-project-structure.md`, especificación de seguridad de sesiones/PBKDF2 en Workers, atomicidad en Cloudflare D1 (`batch` + bloqueo optimista) y Cron Trigger semanal idempotente. |

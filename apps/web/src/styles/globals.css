@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+
+:root {
+  --bg-canvas: #f7f5fb;
+  --bg-surface: #ffffff;
+  --bg-elevated: #efeaf8;
+  --border-subtle: #dfd7f0;
+  --text-primary: #1b1429;
+  --text-secondary: #594f6e;
+  --brand-primary: #6d28d9;
+  --brand-primary-hover: #5b21b6;
+  --brand-accent: #a855f7;
+}

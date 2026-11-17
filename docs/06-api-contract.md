@@ -1,13 +1,13 @@
 # Contrato de API
 
-| Campo | Valor |
-|--------|-------|
-| Proyecto | Munchinking League |
-| Documento | Contrato de API |
-| Archivo | `06-api-contract.md` |
-| Versión | 1.1 |
-| Estado | APPROVED |
-| Última actualización | 17/11/2026 |
+| Campo                | Valor                |
+| -------------------- | -------------------- |
+| Proyecto             | Munchinking League   |
+| Documento            | Contrato de API      |
+| Archivo              | `06-api-contract.md` |
+| Versión              | 1.1                  |
+| Estado               | APPROVED             |
+| Última actualización | 17/11/2026           |
 
 ---
 
@@ -760,7 +760,7 @@ Una futura integración con Biwenger podrá añadirse sin modificar el contrato 
 
 # 18. Historial de cambios
 
-| Versión | Descripción |
-|----------|-------------|
-| 1.0 | Primera versión del contrato de API. |
-| 1.1 | Se añaden parámetros de objetivo en `cards.play`, estadísticas de perfil en `manager.getProfile`, `manager.listTargets`, búsqueda y copias de temporada en `library.list`, `notifications.markAllAsRead`, `distribution.status`, devolución determinista por `movementId` en `admin.returnCard` y `admin.sendNotice`. |
+| Versión | Descripción                                                                                                                                                                                                                                                                                                           |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | Primera versión del contrato de API.                                                                                                                                                                                                                                                                                  |
+| 1.1     | Se añaden parámetros de objetivo en `cards.play`, estadísticas de perfil en `manager.getProfile`, `manager.listTargets`, búsqueda y copias de temporada en `library.list`, `notifications.markAllAsRead`, `distribution.status`, devolución determinista por `movementId` en `admin.returnCard` y `admin.sendNotice`. |

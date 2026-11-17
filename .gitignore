@@ -7,11 +7,13 @@ dist/
 build/
 .output/
 .tanstack/
+*.tsbuildinfo
 
 # Cloudflare / Wrangler local state & secrets
 .wrangler/
 .dev.vars
 .dev.vars.*
+db/.generated/
 
 # Environment variables (keep .env.example tracked)
 .env

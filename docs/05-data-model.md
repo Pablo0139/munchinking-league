@@ -1,13 +1,13 @@
 # Modelo de Datos
 
-| Campo | Valor |
-|--------|-------|
-| Proyecto | Munchinking League |
-| Documento | Modelo de Datos |
-| Archivo | `05-data-model.md` |
-| Versión | 1.2 |
-| Estado | APPROVED |
-| Última actualización | 17/11/2026 |
+| Campo                | Valor              |
+| -------------------- | ------------------ |
+| Proyecto             | Munchinking League |
+| Documento            | Modelo de Datos    |
+| Archivo              | `05-data-model.md` |
+| Versión              | 1.2                |
+| Estado               | APPROVED           |
+| Última actualización | 17/11/2026         |
 
 ---
 
@@ -105,11 +105,11 @@ Representa una liga.
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| name | TEXT | Sí |
-| created_at | DATETIME | Sí |
+| Campo      | Tipo     | Obligatorio |
+| ---------- | -------- | ----------- |
+| id         | UUID     | Sí          |
+| name       | TEXT     | Sí          |
+| created_at | DATETIME | Sí          |
 
 ---
 
@@ -132,13 +132,13 @@ Representa una temporada.
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| league_id | UUID | Sí |
-| name | TEXT | Sí |
-| is_active | BOOLEAN | Sí |
-| created_at | DATETIME | Sí |
+| Campo      | Tipo     | Obligatorio |
+| ---------- | -------- | ----------- |
+| id         | UUID     | Sí          |
+| league_id  | UUID     | Sí          |
+| name       | TEXT     | Sí          |
+| is_active  | BOOLEAN  | Sí          |
+| created_at | DATETIME | Sí          |
 
 ---
 
@@ -162,15 +162,15 @@ Representa una cuenta autenticada.
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| username | TEXT | Sí |
-| password_hash | TEXT | Sí |
-| role | TEXT (`MANAGER` \| `ADMIN`) | Sí |
-| is_active | BOOLEAN | Sí |
-| created_at | DATETIME | Sí |
-| updated_at | DATETIME | Sí |
+| Campo         | Tipo                        | Obligatorio |
+| ------------- | --------------------------- | ----------- |
+| id            | UUID                        | Sí          |
+| username      | TEXT                        | Sí          |
+| password_hash | TEXT                        | Sí          |
+| role          | TEXT (`MANAGER` \| `ADMIN`) | Sí          |
+| is_active     | BOOLEAN                     | Sí          |
+| created_at    | DATETIME                    | Sí          |
+| updated_at    | DATETIME                    | Sí          |
 
 ---
 
@@ -194,14 +194,14 @@ Almacena sesiones autenticadas activas para permitir revocación inmediata y coo
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| user_id | UUID | Sí |
-| token_hash | TEXT | Sí |
-| expires_at | DATETIME | Sí |
-| revoked_at | DATETIME | No |
-| created_at | DATETIME | Sí |
+| Campo      | Tipo     | Obligatorio |
+| ---------- | -------- | ----------- |
+| id         | UUID     | Sí          |
+| user_id    | UUID     | Sí          |
+| token_hash | TEXT     | Sí          |
+| expires_at | DATETIME | Sí          |
+| revoked_at | DATETIME | No          |
+| created_at | DATETIME | Sí          |
 
 ---
 
@@ -211,16 +211,16 @@ Representa un participante.
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| user_id | UUID | Sí |
-| league_id | UUID | Sí |
-| display_name | TEXT | Sí |
-| team_name | TEXT | No |
-| avatar_url | TEXT | No |
-| is_active | BOOLEAN | Sí |
-| created_at | DATETIME | Sí |
+| Campo        | Tipo     | Obligatorio |
+| ------------ | -------- | ----------- |
+| id           | UUID     | Sí          |
+| user_id      | UUID     | Sí          |
+| league_id    | UUID     | Sí          |
+| display_name | TEXT     | Sí          |
+| team_name    | TEXT     | No          |
+| avatar_url   | TEXT     | No          |
+| is_active    | BOOLEAN  | Sí          |
+| created_at   | DATETIME | Sí          |
 
 ---
 
@@ -242,21 +242,21 @@ Representa una carta del catálogo.
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| slug | TEXT | Sí |
-| name | TEXT | Sí |
-| nickname | TEXT | Sí |
-| description | TEXT | Sí |
-| usage_rules | TEXT | Sí |
-| rarity | TEXT (`COMMON` \| `RARE` \| `EPIC` \| `LEGENDARY`) | Sí |
-| target_type | TEXT (`NONE` \| `MANAGER` \| `PLAYER` \| `FREE_TEXT`) | Sí |
-| default_copies | INTEGER | Sí |
-| image_url | TEXT | Sí |
-| whatsapp_template | TEXT | Sí |
-| is_enabled | BOOLEAN | Sí |
-| created_at | DATETIME | Sí |
+| Campo             | Tipo                                                  | Obligatorio |
+| ----------------- | ----------------------------------------------------- | ----------- |
+| id                | UUID                                                  | Sí          |
+| slug              | TEXT                                                  | Sí          |
+| name              | TEXT                                                  | Sí          |
+| nickname          | TEXT                                                  | Sí          |
+| description       | TEXT                                                  | Sí          |
+| usage_rules       | TEXT                                                  | Sí          |
+| rarity            | TEXT (`COMMON` \| `RARE` \| `EPIC` \| `LEGENDARY`)    | Sí          |
+| target_type       | TEXT (`NONE` \| `MANAGER` \| `PLAYER` \| `FREE_TEXT`) | Sí          |
+| default_copies    | INTEGER                                               | Sí          |
+| image_url         | TEXT                                                  | Sí          |
+| whatsapp_template | TEXT                                                  | Sí          |
+| is_enabled        | BOOLEAN                                               | Sí          |
+| created_at        | DATETIME                                              | Sí          |
 
 ---
 
@@ -271,6 +271,7 @@ Representa una carta del catálogo.
 ## Relaciones
 
 1:N con CardCopy.
+
 ## 4.6 card_copy
 
 Representa una copia física de una carta durante una temporada.
@@ -279,14 +280,14 @@ Cada registro identifica una única copia de una `CardDefinition`.
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| season_id | UUID | Sí |
-| card_definition_id | UUID | Sí |
-| current_manager_id | UUID | No |
-| location | TEXT | Sí |
-| created_at | DATETIME | Sí |
+| Campo              | Tipo     | Obligatorio |
+| ------------------ | -------- | ----------- |
+| id                 | UUID     | Sí          |
+| season_id          | UUID     | Sí          |
+| card_definition_id | UUID     | Sí          |
+| current_manager_id | UUID     | No          |
+| location           | TEXT     | Sí          |
+| created_at         | DATETIME | Sí          |
 
 ---
 
@@ -335,23 +336,23 @@ Constituye el registro histórico permanente del sistema.
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| season_id | UUID | Sí |
-| card_copy_id | UUID | Sí |
-| manager_id | UUID | Sí |
-| actor_user_id | UUID | No |
-| movement_type | TEXT (`DISTRIBUTED` \| `PLAYED` \| `DISCARDED` \| `RETURNED`) | Sí |
-| from_location | TEXT (`DECK` \| `HAND`) | Sí |
-| to_location | TEXT (`DECK` \| `HAND`) | Sí |
-| target_manager_id | UUID | No |
-| target_label | TEXT | No |
-| whatsapp_message | TEXT | No |
-| distribution_batch_id | UUID | No |
-| related_movement_id | UUID | No |
-| notes | TEXT | No |
-| created_at | DATETIME | Sí |
+| Campo                 | Tipo                                                          | Obligatorio |
+| --------------------- | ------------------------------------------------------------- | ----------- |
+| id                    | UUID                                                          | Sí          |
+| season_id             | UUID                                                          | Sí          |
+| card_copy_id          | UUID                                                          | Sí          |
+| manager_id            | UUID                                                          | Sí          |
+| actor_user_id         | UUID                                                          | No          |
+| movement_type         | TEXT (`DISTRIBUTED` \| `PLAYED` \| `DISCARDED` \| `RETURNED`) | Sí          |
+| from_location         | TEXT (`DECK` \| `HAND`)                                       | Sí          |
+| to_location           | TEXT (`DECK` \| `HAND`)                                       | Sí          |
+| target_manager_id     | UUID                                                          | No          |
+| target_label          | TEXT                                                          | No          |
+| whatsapp_message      | TEXT                                                          | No          |
+| distribution_batch_id | UUID                                                          | No          |
+| related_movement_id   | UUID                                                          | No          |
+| notes                 | TEXT                                                          | No          |
+| created_at            | DATETIME                                                      | Sí          |
 
 ---
 
@@ -402,16 +403,16 @@ Garantiza la idempotencia y auditoría del reparto semanal de cada lunes.
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| season_id | UUID | Sí |
-| week_key | TEXT (`YYYY-Www`) | Sí |
-| trigger_source | TEXT (`CRON` \| `ADMIN`) | Sí |
-| triggered_by_user_id | UUID | No |
-| distributed_count | INTEGER | Sí |
-| skipped_full_hand_count | INTEGER | Sí |
-| created_at | DATETIME | Sí |
+| Campo                   | Tipo                     | Obligatorio |
+| ----------------------- | ------------------------ | ----------- |
+| id                      | UUID                     | Sí          |
+| season_id               | UUID                     | Sí          |
+| week_key                | TEXT (`YYYY-Www`)        | Sí          |
+| trigger_source          | TEXT (`CRON` \| `ADMIN`) | Sí          |
+| triggered_by_user_id    | UUID                     | No          |
+| distributed_count       | INTEGER                  | Sí          |
+| skipped_full_hand_count | INTEGER                  | Sí          |
+| created_at              | DATETIME                 | Sí          |
 
 ### Restricciones
 
@@ -425,17 +426,17 @@ Representa una notificación dirigida a un manager.
 
 ### Campos
 
-| Campo | Tipo | Obligatorio |
-|--------|------|-------------|
-| id | UUID | Sí |
-| manager_id | UUID | Sí |
-| notification_type | TEXT (`CARD_DISTRIBUTED` \| `CARD_RETURNED` \| `ADMIN_NOTICE`) | Sí |
-| title | TEXT | Sí |
-| message | TEXT | Sí |
-| related_movement_id | UUID | No |
-| is_read | BOOLEAN | Sí |
-| read_at | DATETIME | No |
-| created_at | DATETIME | Sí |
+| Campo               | Tipo                                                           | Obligatorio |
+| ------------------- | -------------------------------------------------------------- | ----------- |
+| id                  | UUID                                                           | Sí          |
+| manager_id          | UUID                                                           | Sí          |
+| notification_type   | TEXT (`CARD_DISTRIBUTED` \| `CARD_RETURNED` \| `ADMIN_NOTICE`) | Sí          |
+| title               | TEXT                                                           | Sí          |
+| message             | TEXT                                                           | Sí          |
+| related_movement_id | UUID                                                           | No          |
+| is_read             | BOOLEAN                                                        | Sí          |
+| read_at             | DATETIME                                                       | No          |
+| created_at          | DATETIME                                                       | Sí          |
 
 ---
 
@@ -455,26 +456,26 @@ El campo `is_read` indicará si la notificación ya ha sido consultada.
 
 # 5. Claves foráneas e índices críticos
 
-| Tabla | Columna | Referencia |
-|--------|---------|------------|
-| season | league_id | league.id |
-| session | user_id | user.id |
-| manager | user_id | user.id |
-| manager | league_id | league.id |
-| distribution_batch | season_id | season.id |
-| distribution_batch | triggered_by_user_id | user.id |
-| card_copy | season_id | season.id |
-| card_copy | card_definition_id | card_definition.id |
-| card_copy | current_manager_id | manager.id |
-| card_movement | season_id | season.id |
-| card_movement | card_copy_id | card_copy.id |
-| card_movement | manager_id | manager.id |
-| card_movement | actor_user_id | user.id |
-| card_movement | target_manager_id | manager.id |
-| card_movement | distribution_batch_id | distribution_batch.id |
-| card_movement | related_movement_id | card_movement.id |
-| notification | manager_id | manager.id |
-| notification | related_movement_id | card_movement.id |
+| Tabla              | Columna               | Referencia            |
+| ------------------ | --------------------- | --------------------- |
+| season             | league_id             | league.id             |
+| session            | user_id               | user.id               |
+| manager            | user_id               | user.id               |
+| manager            | league_id             | league.id             |
+| distribution_batch | season_id             | season.id             |
+| distribution_batch | triggered_by_user_id  | user.id               |
+| card_copy          | season_id             | season.id             |
+| card_copy          | card_definition_id    | card_definition.id    |
+| card_copy          | current_manager_id    | manager.id            |
+| card_movement      | season_id             | season.id             |
+| card_movement      | card_copy_id          | card_copy.id          |
+| card_movement      | manager_id            | manager.id            |
+| card_movement      | actor_user_id         | user.id               |
+| card_movement      | target_manager_id     | manager.id            |
+| card_movement      | distribution_batch_id | distribution_batch.id |
+| card_movement      | related_movement_id   | card_movement.id      |
+| notification       | manager_id            | manager.id            |
+| notification       | related_movement_id   | card_movement.id      |
 
 Restricciones SQL / SQLite (D1) obligatorias en las migraciones Drizzle:
 
@@ -544,6 +545,7 @@ Se crearán índices para optimizar las consultas más frecuentes.
 - manager_id
 - is_read
 - created_at
+
 7. Restricciones de integridad
 
 Las siguientes restricciones deberán garantizar que los datos persistidos sean coherentes con las reglas del dominio.
@@ -586,11 +588,11 @@ Esta validación se realizará dentro del caso de uso de reparto y devolución.
 
 Cada CardMovement deberá contener:
 
-* CardCopy.
-* Tipo de movimiento.
-* Ubicación de origen.
-* Ubicación de destino.
-* Fecha y hora.
+- CardCopy.
+- Tipo de movimiento.
+- Ubicación de origen.
+- Ubicación de destino.
+- Fecha y hora.
 
 ⸻
 
@@ -598,11 +600,11 @@ Cada CardMovement deberá contener:
 
 Los movimientos deberán representar únicamente transiciones válidas.
 
-Tipo	From	To
-DISTRIBUTED	DECK	HAND
-PLAYED	HAND	DECK
-DISCARDED	HAND	DECK
-RETURNED	DECK	HAND
+Tipo From To
+DISTRIBUTED DECK HAND
+PLAYED HAND DECK
+DISCARDED HAND DECK
+RETURNED DECK HAND
 
 ⸻
 
@@ -626,9 +628,9 @@ El sistema evitará los borrados en cascada sobre información histórica.
 
 Especialmente:
 
-* No se eliminarán CardMovement.
-* No se eliminarán temporadas con movimientos registrados.
-* No se eliminarán CardCopy que tengan historial.
+- No se eliminarán CardMovement.
+- No se eliminarán temporadas con movimientos registrados.
+- No se eliminarán CardCopy que tengan historial.
 
 Cuando una entidad deje de estar activa, se utilizará el estado correspondiente en lugar de eliminar físicamente información histórica.
 
@@ -674,9 +676,9 @@ Buscar CardMovement asociados a un Manager.
 
 Se podrán filtrar por:
 
-* Tipo de movimiento.
-* Carta.
-* Fecha.
+- Tipo de movimiento.
+- Carta.
+- Fecha.
 
 ⸻
 
@@ -684,10 +686,10 @@ Se podrán filtrar por:
 
 El administrador podrá consultar todos los tipos de movimiento:
 
-* DISTRIBUTED.
-* PLAYED.
-* DISCARDED.
-* RETURNED.
+- DISTRIBUTED.
+- PLAYED.
+- DISCARDED.
+- RETURNED.
 
 ⸻
 
@@ -726,10 +728,10 @@ Al crear una Season se generarán las CardCopy correspondientes a las cartas con
 Por ejemplo:
 
 CardDefinition:
-    Presi-Culo
-    copies = 3
+Presi-Culo
+copies = 3
 Season:
-    2026
+2026
 Resultado:
 CardCopy A → Presi-Culo
 CardCopy B → Presi-Culo
@@ -763,88 +765,88 @@ No se utilizarán enums de base de datos para estos campos.
 13. Esquema conceptual
 
 ┌─────────────────┐
-│     league      │
+│ league │
 ├─────────────────┤
-│ id              │
-│ name            │
-│ created_at      │
+│ id │
+│ name │
+│ created_at │
 └────────┬────────┘
-         │
-         ├──────────────────┐
-         │                  │
-         ▼                  ▼
-┌─────────────────┐  ┌─────────────────┐
-│     season      │  │     manager     │
-├─────────────────┤  ├─────────────────┤
-│ id              │  │ id              │
-│ league_id       │  │ user_id         │
-│ name            │  │ league_id       │
-│ is_active       │  │ display_name    │
-│ created_at      │  │ avatar_url      │
-└────────┬────────┘  └────────┬────────┘
-         │                    │
-         │                    │
-         ▼                    │
-┌─────────────────┐           │
-│    card_copy    │◄──────────┘
+│
+├──────────────────┐
+│ │
+▼ ▼
+┌─────────────────┐ ┌─────────────────┐
+│ season │ │ manager │
+├─────────────────┤ ├─────────────────┤
+│ id │ │ id │
+│ league_id │ │ user_id │
+│ name │ │ league_id │
+│ is_active │ │ display_name │
+│ created_at │ │ avatar_url │
+└────────┬────────┘ └────────┬────────┘
+│ │
+│ │
+▼ │
+┌─────────────────┐ │
+│ card_copy │◄──────────┘
 ├─────────────────┤
-│ id              │
-│ season_id       │
+│ id │
+│ season_id │
 │ card_definition │
 │ current_manager │
-│ location        │
-│ created_at      │
+│ location │
+│ created_at │
 └────────┬────────┘
-         │
-         ▼
+│
+▼
 ┌─────────────────┐
-│  card_movement  │
+│ card_movement │
 ├─────────────────┤
-│ id              │
-│ card_copy_id    │
-│ manager_id      │
-│ movement_type   │
-│ from_location   │
-│ to_location     │
-│ created_at      │
+│ id │
+│ card_copy_id │
+│ manager_id │
+│ movement_type │
+│ from_location │
+│ to_location │
+│ created_at │
 └─────────────────┘
 ┌─────────────────┐
 │ card_definition │
 ├─────────────────┤
-│ id              │
-│ name            │
-│ nickname        │
-│ description     │
-│ rarity          │
-│ image_url       │
-│ whatsapp_tpl    │
-│ created_at      │
+│ id │
+│ name │
+│ nickname │
+│ description │
+│ rarity │
+│ image_url │
+│ whatsapp_tpl │
+│ created_at │
 └─────────────────┘
 ┌─────────────────┐
-│      user       │
+│ user │
 ├─────────────────┤
-│ id              │
-│ username        │
-│ password_hash   │
-│ role            │
-│ created_at      │
+│ id │
+│ username │
+│ password_hash │
+│ role │
+│ created_at │
 └─────────────────┘
 ┌─────────────────┐
-│  notification   │
+│ notification │
 ├─────────────────┤
-│ id              │
-│ manager_id      │
-│ title           │
-│ message         │
-│ is_read         │
-│ created_at      │
+│ id │
+│ manager_id │
+│ title │
+│ message │
+│ is_read │
+│ created_at │
 └─────────────────┘
 
 ⸻
 
 14. Historial de cambios
 
-Versión	Descripción
-1.0	Primera versión del modelo de datos.
-1.1	Se añaden from_location y to_location a card_movement para mantener explícitas las transiciones de las cartas.
-1.2	Se completan tablas `session` y `distribution_batch`, columnas de objetivo/WhatsApp/reversión en `card_movement`, atributos completos de `card_definition` (`slug`, `usage_rules`, `target_type`, `default_copies`) y restricciones `CHECK` / índices únicos parciales para SQLite D1.
+Versión Descripción
+1.0 Primera versión del modelo de datos.
+1.1 Se añaden from_location y to_location a card_movement para mantener explícitas las transiciones de las cartas.
+1.2 Se completan tablas `session` y `distribution_batch`, columnas de objetivo/WhatsApp/reversión en `card_movement`, atributos completos de `card_definition` (`slug`, `usage_rules`, `target_type`, `default_copies`) y restricciones `CHECK` / índices únicos parciales para SQLite D1.

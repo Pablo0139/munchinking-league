@@ -1,13 +1,13 @@
 # Estructura del Proyecto
 
-| Campo | Valor |
-|--------|-------|
-| Proyecto | Munchinking League |
-| Documento | Estructura del Proyecto |
-| Archivo | `07-project-structure.md` |
-| Versión | 1.1 |
-| Estado | APPROVED |
-| Última actualización | 17/11/2026 |
+| Campo                | Valor                     |
+| -------------------- | ------------------------- |
+| Proyecto             | Munchinking League        |
+| Documento            | Estructura del Proyecto   |
+| Archivo              | `07-project-structure.md` |
+| Versión              | 1.1                       |
+| Estado               | APPROVED                  |
+| Última actualización | 17/11/2026                |
 
 ---
 
@@ -890,7 +890,7 @@ Las decisiones de infraestructura deberán seguir siendo coherentes con el docum
 
 # 36. Historial de cambios
 
-| Versión | Descripción |
-|----------|-------------|
-| 1.0 | Primera versión de la estructura del proyecto. |
-| 1.1 | Sincronización del índice documental canónico y aprobación de la estructura de monorepo (`apps/web`, `apps/api`, `packages/*`, `db/`). |
+| Versión | Descripción                                                                                                                            |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | Primera versión de la estructura del proyecto.                                                                                         |
+| 1.1     | Sincronización del índice documental canónico y aprobación de la estructura de monorepo (`apps/web`, `apps/api`, `packages/*`, `db/`). |
