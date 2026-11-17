@@ -5,9 +5,9 @@
 | Proyecto | Munchinking League |
 | Documento | Modelo de Dominio |
 | Archivo | `04-domain-model.md` |
-| Versión | 1.0 |
-| Estado | DRAFT |
-| Última actualización | 24/07/2026 |
+| Versión | 1.1 |
+| Estado | APPROVED |
+| Última actualización | 17/11/2026 |
 
 ---
 
@@ -172,14 +172,17 @@ No representa una carta física.
 
 - Nombre.
 - Apodo.
-- Rareza.
-- Descripción.
+- Rareza (`COMMON`, `RARE`, `EPIC`, `LEGENDARY`).
+- Descripción del efecto.
+- Reglas de uso y restricciones de ventana/aplicación.
+- Tipo de objetivo requerido al jugarse (`NONE`, `MANAGER`, `PLAYER`, `FREE_TEXT`).
+- Número de copias por defecto al inicializar una temporada (`defaultCopies`).
 - Imagen.
 - Plantilla del mensaje de WhatsApp.
 
 Las CardDefinition son compartidas por todas las temporadas.
 
-Nunca contienen estado.
+Nunca contienen estado dinámico de juego.
 
 ---
 
@@ -214,18 +217,31 @@ Todo cambio en una carta genera exactamente un CardMovement.
 
 ### Responsabilidades
 
-- Registrar el tipo de movimiento.
-- Registrar el momento del movimiento.
-- Registrar el manager implicado.
-- Permitir reconstruir el historial completo.
+- Registrar el tipo de movimiento (`DISTRIBUTED`, `PLAYED`, `DISCARDED`, `RETURNED`).
+- Registrar la transición explícita (`fromLocation` → `toLocation`).
+- Registrar el momento exacto del movimiento.
+- Registrar el manager propietario/actor y el usuario administrador cuando se trate de una operación administrativa.
+- Conservar el contexto de juego cuando proceda (`targetManagerId`, `targetLabel`, `whatsappMessage`, `relatedMovementId`, `distributionBatchId`, `notes`).
+- Permitir reconstruir el historial completo sin mutar hechos pasados.
 
 ### Reglas
 
-Los CardMovement son inmutables.
-
-Nunca podrán modificarse.
+Los CardMovement son inmutables en sus hechos históricos.
 
 Nunca podrán eliminarse.
+
+---
+
+## 4.9 DistributionBatch
+
+Representa la ejecución única e idempotente de un reparto semanal dentro de una `Season`.
+
+### Responsabilidades
+
+- Identificar la clave de semana ISO (`weekKey`, p. ej. `2026-W47`).
+- Registrar si el disparo fue automático (`CRON`) o manual (`ADMIN`).
+- Conservar métricas auditables (`distributedCount`, `skippedFullHandCount`).
+- Garantizar que nunca se reparta dos veces la misma semana en una temporada.
 
 ---
 
@@ -396,51 +412,31 @@ No mantiene estado.
 
 # 7. Ciclo de vida de una carta
 
-Durante una temporada una CardCopy podrá recorrer el siguiente ciclo.
+Durante una temporada una `CardCopy` persiste siempre en una de dos ubicaciones reales (`DECK` o `HAND`), mientras que cada transición queda registrada como un `CardMovement` inmutable:
 
 ```text
               +----------------+
-              |                |
-              |     Deck       |
-              |                |
+              |      DECK      |
               +-------+--------+
                       |
-                Reparto semanal
-                      |
-                      ▼
+         DISTRIBUTED  |  ▲  PLAYED / DISCARDED
+       (reparto lun.) |  |  (retorno atómico al mazo)
+                      ▼  |
+              +-------+--+-----+
+              |      HAND      |
+              |  (máx. 3/mgr)  |
+              +-------+--------+
+                      ▲
+                      |  RETURNED
+                      |  (corrección admin vinculada a un PLAYED)
+              +-------+--------+
+              |      DECK      |
               +----------------+
-              |                |
-              |      Hand      |
-              |                |
-              +----+-------+---+
-                   |       |
-            Jugar  |       | Descartar
-                   |       |
-                   ▼       ▼
-           +-----------+  +--------------+
-           |  Played   |  | Discarded    |
-           +-----+-----+  +------+-------+
-                 |               |
-                 |               |
-                 +-------+-------+
-                         |
-                         ▼
-                     +-------+
-                     | Deck  |
-                     +-------+
 ```
 
-En cualquier momento un administrador podrá devolver una carta previamente jugada.
+En cualquier momento un administrador podrá devolver una carta previamente jugada siempre que ese movimiento `PLAYED` no haya sido devuelto ya y el manager tenga menos de 3 cartas en `HAND`.
 
-```text
-Played
-
-↓
-
-Hand
-```
-
-Cada transición genera un nuevo CardMovement.
+Cada transición genera un nuevo `CardMovement`.
 
 ---
 
@@ -567,3 +563,4 @@ Este diagrama representa las relaciones principales del dominio y servirá como 
 | Versión | Descripción |
 |----------|-------------|
 | 1.0 | Primera versión del modelo de dominio de Munchinking League. |
+| 1.1 | Incorporación de atributos completos de `CardDefinition` (`usageRules`, `targetType`, `defaultCopies`), contexto enriquecido en `CardMovement`, entidad `DistributionBatch` y alineación del ciclo `DECK`/`HAND`. |

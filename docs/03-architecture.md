@@ -5,9 +5,9 @@
 | Proyecto | Munchinking League |
 | Documento | Arquitectura |
 | Archivo | `03-architecture.md` |
-| Versión | 1.0 |
-| Estado | DRAFT |
-| Última actualización | 24/07/2026 |
+| Versión | 1.1 |
+| Estado | APPROVED |
+| Última actualización | 17/11/2026 |
 
 ---
 
@@ -355,34 +355,18 @@ No contendrá reglas de negocio.
 
 ## 6.1 Organización
 
-La estructura principal será la siguiente:
+La estructura principal en `apps/web` (véase el desglose físico completo en `07-project-structure.md`) será la siguiente:
 
 ```text
-src/
+apps/web/src/
 
 ├── app/
-
 ├── assets/
-
 ├── components/
-
 ├── features/
-
 ├── hooks/
-
-├── layouts/
-
 ├── lib/
-
-├── routes/
-
-├── services/
-
-├── styles/
-
-├── types/
-
-└── utils/
+└── styles/
 ```
 
 Cada carpeta tendrá una responsabilidad claramente definida.
@@ -496,25 +480,21 @@ Su única responsabilidad será ejecutar los casos de uso del sistema.
 
 ## 7.1 Organización
 
-La estructura será la siguiente.
+La estructura de `apps/api` (véase `07-project-structure.md`) será la siguiente:
 
 ```text
-src/
+apps/api/src/
 
 ├── routers/
-
-├── services/
-
-├── repositories/
-
-├── domain/
-
-├── middleware/
-
-├── db/
-
-└── utils/
+├── application/
+├── infrastructure/
+├── auth/
+├── whatsapp/
+├── scheduled/
+└── index.ts
 ```
+
+El modelo de dominio puro residirá en `packages/domain` y el esquema/migraciones Drizzle en `db/`.
 
 ---
 
@@ -668,63 +648,39 @@ Nunca podrán eliminarse.
 
 ## 9.5 Ciclo de vida de una CardCopy
 
-Durante una temporada una carta podrá recorrer el siguiente ciclo.
+En persistencia, toda `CardCopy` se encuentra siempre en `DECK` o `HAND`. Cada transición se registra de forma inmutable mediante `CardMovement`.
 
-### Reparto
+### Reparto (`DISTRIBUTED`)
 
 ```text
-Deck
-
-↓
-
-Hand
+DECK ──► HAND
 ```
 
 ---
 
-### Juego
+### Juego (`PLAYED`)
 
 ```text
-Hand
-
-↓
-
-Played
-
-↓
-
-Deck
+HAND ──(evento PLAYED)──► DECK
 ```
 
 ---
 
-### Descarte
+### Descarte (`DISCARDED`)
 
 ```text
-Hand
-
-↓
-
-Discarded
-
-↓
-
-Deck
+HAND ──(evento DISCARDED)──► DECK
 ```
 
 ---
 
-### Devolución
+### Devolución administrativa (`RETURNED`)
 
 ```text
-Played
-
-↓
-
-Hand
+DECK ──(evento RETURNED vinculado al PLAYED original)──► HAND
 ```
 
-Cada transición generará un CardMovement independiente.
+Cada transición generará un `CardMovement` independiente.
 
 ---
 
@@ -771,13 +727,18 @@ Cada usuario únicamente podrá acceder a los recursos que le correspondan segú
 
 ---
 
-## 11.1 Autenticación
+## 11.1 Autenticación y gestión de sesiones
 
-El acceso a la aplicación requerirá autenticación.
+El acceso a la aplicación requerirá autenticación mediante usuario y contraseña verificada con **PBKDF2-SHA256** (Web Crypto API nativa de Cloudflare Workers, mínimo 100.000 iteraciones y salt aleatorio por usuario).
 
-Toda petición al backend deberá estar asociada a una sesión válida.
+Al autenticarse correctamente:
 
-Las rutas protegidas no podrán ejecutarse sin autenticación previa.
+1. Se registrará una sesión persistente en la tabla `session` de Cloudflare D1 (con expiración deslizante de 30 días y posibilidad de revocación inmediata).
+2. El Worker emitirá un token de sesión opaco (o JWT firmado con `HMAC-SHA256` respaldado por `session.id`) dentro de una cookie `HttpOnly; Secure; SameSite=Lax; Path=/`.
+3. Para simplificar CORS, cookies y despliegue gratuito, el frontend en Cloudflare Pages y la API `/trpc/*` operarán bajo el mismo origen mediante Pages Functions / Service Binding al Worker (o subdominio compartido con credenciales habilitadas).
+4. Se aplicará limitación de intentos en `auth.login` para mitigar ataques de fuerza bruta.
+
+Las rutas protegidas no podrán ejecutarse sin sesión activa y no expirada.
 
 ---
 
@@ -821,11 +782,13 @@ El frontend minimizará el número de peticiones al servidor mediante:
 
 ---
 
-## 12.2 Servidor
+## 12.2 Servidor, Atomicidad en D1 y Tareas Programadas
 
 Los casos de uso deberán minimizar el número de consultas a la base de datos.
 
-Siempre que sea posible, una operación funcional deberá resolverse mediante una única transacción.
+En Cloudflare D1 (SQLite en el borde), las escrituras compuestas —como actualizar `card_copy` con condición optimista (`WHERE id = ? AND location = 'HAND' AND current_manager_id = ?`), insertar `card_movement` e insertar `notification`— se ejecutarán de manera atómica utilizando `db.batch([...])` de D1 / Drizzle y comprobando filas afectadas para impedir condiciones de carrera (por ejemplo, doble pulsación sobre **Jugar**).
+
+El reparto automático de cada lunes se ejecutará mediante un **Cron Trigger** de Cloudflare Workers (`scheduled` handler) configurado para ejecutarse los lunes y calcular la semana ISO en zona horaria `Europe/Madrid`, garantizando idempotencia mediante `distribution_batch`.
 
 ---
 
@@ -986,3 +949,4 @@ No existirán modificaciones silenciosas del estado de una carta.
 | Versión | Descripción |
 |----------|-------------|
 | 1.0 | Primera versión de la arquitectura de Munchinking League. |
+| 1.1 | Unificación de directorios con `07-project-structure.md`, especificación de seguridad de sesiones/PBKDF2 en Workers, atomicidad en Cloudflare D1 (`batch` + bloqueo optimista) y Cron Trigger semanal idempotente. |

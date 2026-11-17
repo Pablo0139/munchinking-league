@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.output/
+.tanstack/
+
+# Cloudflare / Wrangler local state & secrets
+.wrangler/
+.dev.vars
+.dev.vars.*
+
+# Environment variables (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# Testing & coverage
+coverage/
+playwright-report/
+test-results/
+
+# Logs & OS / Editor files
+*.log
+.DS_Store
+Thumbs.db

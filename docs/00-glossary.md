@@ -5,9 +5,9 @@
 | Proyecto | Munchinking League |
 | Documento | Glosario |
 | Archivo | `00-glossary.md` |
-| Versión | 1.0 |
+| Versión | 1.1 |
 | Estado | FROZEN |
-| Última actualización | 23/07/2026 |
+| Última actualización | 17/11/2026 |
 
 ---
 
@@ -186,32 +186,48 @@ Cada Notification pertenece a un único Manager.
 
 ## Card Location
 
-Toda CardCopy posee exactamente una ubicación lógica.
+Toda CardCopy posee exactamente una ubicación persistida actual.
 
-Las ubicaciones permitidas son:
+Las ubicaciones persistidas permitidas son:
 
-- Deck
-- Hand
-- Played
-- Discarded
+- `DECK`
+- `HAND`
 
-Toda modificación de la ubicación genera un CardMovement.
+Toda modificación de ubicación genera un `CardMovement`.
 
 ---
 
-## Played
+## Movement Type
 
-Ubicación lógica que representa una carta recién jugada.
+Clasificación inmutable del hecho registrado en `CardMovement`.
 
-Las CardCopy permanecen en esta ubicación hasta que el sistema registra su retorno al Deck o a la Hand.
+Los tipos permitidos son:
+
+- `DISTRIBUTED`: reparto de una `CardCopy` desde `DECK` hacia `HAND`.
+- `PLAYED`: juego de una `CardCopy` desde `HAND`, retornando inmediatamente a `DECK`.
+- `DISCARDED`: descarte de una `CardCopy` desde `HAND`, retornando inmediatamente a `DECK`.
+- `RETURNED`: devolución administrativa de una `CardCopy` previamente jugada desde `DECK` hacia `HAND`.
+
+Nota: `PLAYED` y `DISCARDED` representan eventos históricos de movimiento y no ubicaciones persistentes en `CardCopy`, ya que toda carta jugada o descartada regresa atómicamente al `DECK`.
 
 ---
 
-## Discarded
+## DistributionBatch
 
-Ubicación lógica que representa una carta descartada por un Manager.
+Representa la ejecución auditable e idempotente de un reparto semanal (por ejemplo, `2026-W47`) dentro de una `Season`.
 
-Tras registrarse el descarte, la CardCopy vuelve inmediatamente al Deck.
+Evita repartos duplicados sobre la misma semana y agrupa los `CardMovement` generados en esa ejecución.
+
+---
+
+## TargetType
+
+Define qué parámetro contextual requiere una `CardDefinition` al jugarse para completar su mensaje oficial de WhatsApp:
+
+- `NONE`: no requiere objetivo adicional.
+- `MANAGER`: requiere seleccionar un `Manager` objetivo de la liga.
+- `PLAYER`: requiere indicar el nombre del jugador objetivo.
+- `FREE_TEXT`: requiere indicar un detalle breve libre cuando la regla de la carta lo exige.
 
 ---
 
@@ -268,3 +284,4 @@ Para mantener la consistencia del proyecto:
 | Versión | Descripción |
 |----------|-------------|
 | 1.0 | Primera versión congelada del glosario del proyecto. |
+| 1.1 | Alineación explícita entre `Card Location` persistida (`DECK`, `HAND`), `Movement Type` histórico (`DISTRIBUTED`, `PLAYED`, `DISCARDED`, `RETURNED`), `DistributionBatch` y `TargetType`. |

@@ -1,268 +1,43 @@
-# 🃏 Munchinking League
+# 🃏 Munchinking League — Índice de Documentación
 
-> Aplicación web para la gestión de las Cartas Personalizadas de la Munchinking League.
+> Documentación funcional, arquitectónica, de diseño y operativa de **Munchinking League**.
 
 ---
 
-# Información
+## Información general
 
 | Campo | Valor |
-|--------|-------|
+|-------|-------|
 | Proyecto | Munchinking League |
-| Versión | 1.1 |
-| Estado | En desarrollo |
-| Licencia | MIT |
+| Versión documental | 1.2 |
+| Estado | Especificación completa — Lista para Fase 0 / Fase 1 |
+| Última actualización | 17/11/2026 |
 
 ---
 
-# Descripción
+## Mapa canónico de documentos (`docs/`)
 
-**Munchinking League** es una aplicación web diseñada para complementar la experiencia de una liga privada de Biwenger mediante un sistema de cartas personalizadas.
+Todos los documentos siguen una única línea técnica coherente (**Monorepo TypeScript + React/Vite/Tailwind/TanStack + tRPC + Cloudflare Pages/Workers/D1/R2 + Drizzle ORM**) y respetan el lenguaje ubicuo congelado en `00-glossary.md`:
 
-La aplicación actúa como el **registro oficial de las cartas de la liga**, permitiendo a los managers consultar su mano, jugar cartas, generar automáticamente los mensajes para comunicar las acciones por WhatsApp y mantener un historial completo de toda la temporada.
-
-En esta primera versión la aplicación **no modifica automáticamente Biwenger**. La aplicación de los efectos continúa realizándose manualmente por el administrador, utilizando la información generada por la propia aplicación.
-
----
-
-# Objetivos
-
-- Gestionar el reparto semanal de cartas.
-- Mostrar la mano de cartas de cada manager.
-- Permitir jugar y descartar cartas.
-- Generar automáticamente mensajes para WhatsApp.
-- Mantener un historial público de cartas jugadas.
-- Mantener un historial privado de cada manager.
-- Facilitar el trabajo del administrador.
-- Preparar la arquitectura para una futura integración con Biwenger.
+| Orden | Archivo | Propósito | Estado |
+|-------|---------|-----------|--------|
+| 00 | [`00-glossary.md`](./00-glossary.md) | Lenguaje ubicuo (`League`, `Season`, `Manager`, `CardDefinition`, `CardCopy`, `CardMovement`, `DistributionBatch`, `TargetType`). | FROZEN v1.1 |
+| 01 | [`01-user-flows-and-stories.md`](./01-user-flows-and-stories.md) | Mapa de navegación, flujos extremo a extremo e historias de usuario (`HU-01`..`HU-11`) con criterios de aceptación. | APPROVED v1.0 |
+| 02 | [`02-functional-specification.md`](./02-functional-specification.md) | Alcance del MVP, reglas del juego, pantallas, casos excepcionales y requisitos no funcionales. | APPROVED v1.1 |
+| 03 | [`03-architecture.md`](./03-architecture.md) | Arquitectura por capas, seguridad de sesiones en Workers, atomicidad en D1 y Cron semanal. | APPROVED v1.1 |
+| 04 | [`04-domain-model.md`](./04-domain-model.md) | Entidades, agregados, invariantes, eventos y ciclo de vida de las cartas. | APPROVED v1.1 |
+| 05 | [`05-data-model.md`](./05-data-model.md) | Esquema relacional completo para Cloudflare D1 + Drizzle ORM, claves foráneas, índices únicos parciales y `CHECK`. | APPROVED v1.2 |
+| 06 | [`06-api-contract.md`](./06-api-contract.md) | Contrato completo de procedimientos tRPC (`auth`, `manager`, `cards`, `history`, `library`, `notifications`, `distribution`, `admin`). | APPROVED v1.1 |
+| 07 | [`07-project-structure.md`](./07-project-structure.md) | Estructura física del monorepo (`apps/web`, `apps/api`, `packages/domain`, `packages/shared`, `packages/config`, `db/`). | APPROVED v1.1 |
+| 08 | [`08-design-system.md`](./08-design-system.md) | Paleta morada oficial, tipografía, anatomía 5:7 de cartas, rarezas accesibles (forma + color), abanico y PWA. | APPROVED v1.0 |
+| 09 | [`09-card-catalog-and-templates.md`](./09-card-catalog-and-templates.md) | Motor determinista de plantillas de WhatsApp, dimensionamiento del mazo y catálogo semilla inicial. | APPROVED v1.0 |
+| 10 | [`10-roadmap-and-execution-plan.md`](./10-roadmap-and-execution-plan.md) | Dimensionamiento Cloudflare Free Tier, checklist de infraestructura (Fase 0) y plan de desarrollo por fases (Fases 1–6). | APPROVED v1.0 |
 
 ---
 
-# Filosofía del proyecto
-
-La aplicación **no pretende sustituir Biwenger**.
-
-Su objetivo es complementar la liga aportando una experiencia más inmersiva alrededor de las Cartas Personalizadas.
-
-Las acciones seguirán comunicándose mediante el grupo de WhatsApp de la liga, mientras que Biwenger continuará siendo la plataforma oficial para la gestión deportiva.
-
----
-
-# Funcionalidades principales
-
-## 🃏 Sistema de Cartas
-
-- Mano de cartas en abanico.
-- Mostrar u ocultar las cartas.
-- Jugar cartas.
-- Descartar cartas.
-- Descubrimiento animado de nuevas cartas.
-
----
-
-## 📚 Biblioteca
-
-- Catálogo completo de cartas.
-- Búsqueda.
-- Filtros.
-- Rarezas.
-- Reglas de uso.
-
----
-
-## 📜 Historial
-
-### Público
-
-Visible para todos los managers.
-
-Incluye únicamente las cartas jugadas.
-
-### Personal
-
-Visible únicamente para cada manager.
-
-Incluye:
-
-- Cartas recibidas.
-- Cartas jugadas.
-- Cartas descartadas.
-- Cartas devueltas.
-- Estado de cada carta.
-
-### Administración
-
-Historial completo de todas las acciones realizadas durante la temporada.
-
----
-
-## 🔔 Notificaciones
-
-La aplicación dispone de un centro de notificaciones donde el usuario podrá consultar:
-
-- Nuevas cartas.
-- Cartas devueltas.
-- Cartas validadas.
-- Avisos del administrador.
-
-Cada lunes, el reparto semanal se notificará mediante un evento especial que permitirá descubrir la nueva carta mediante una animación.
-
----
-
-## 💬 Integración con WhatsApp
-
-Cuando un manager juega una carta, la aplicación genera automáticamente un mensaje formateado para compartir en el grupo oficial de WhatsApp de la liga.
-
-Este mensaje sirve como comunicación oficial entre los managers y el administrador.
-
----
-
-## ⚙️ Administración
-
-El administrador podrá:
-
-- Consultar todas las cartas jugadas.
-- Consultar todas las cartas descartadas.
-- Validar cartas.
-- Devolver cartas mal jugadas.
-- Consultar el historial completo de la temporada.
-
-La aplicación manual de los efectos continuará realizándose desde Biwenger.
-
----
-
-# Tecnologías
-
-## Frontend
-
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-
-## Backend
-
-- Cloudflare Workers
-
-## Base de datos
-
-- Cloudflare D1 (SQLite)
-
-## Almacenamiento
-
-- Cloudflare R2
-
-## Autenticación
-
-- JWT
-
-## Despliegue
-
-- Cloudflare Pages
-
----
-
-# Arquitectura
-
-```text
-React (Frontend)
-
-        │
-
-Cloudflare Workers
-
-        │
-
-Cloudflare D1
-
-        │
-
-Cloudflare R2
-```
-
-Toda la infraestructura está diseñada para funcionar dentro del ecosistema de Cloudflare utilizando únicamente el plan gratuito.
-
----
-
-# Estado del proyecto
-
-## ✅ Completado
-
-- Definición funcional.
-- Arquitectura.
-- Modelo de dominio.
-- Identidad visual.
-- Diseño del MVP.
-
-## 🚧 En desarrollo
-
-- Modelo de datos.
-- API REST.
-- Desarrollo del frontend.
-
-## ⏳ Futuro
-
-- Integración con Biwenger.
-- Automatización de efectos.
-- Estadísticas avanzadas.
-- Eventos especiales.
-- Logros.
-
----
-
-# Documentación
-
-Toda la documentación del proyecto se encuentra en la carpeta `docs`.
-
-| Documento | Descripción |
-|------------|-------------|
-| 01 | Documento Funcional |
-| 02 | Arquitectura |
-| 03 | Modelo de Dominio |
-| 04 | Flujos de Usuario |
-| 05 | Modelo de Datos |
-| 06 | API REST |
-| 07 | Sistema de Diseño |
-| 08 | Roadmap |
-
----
-
-# Hoja de ruta
-
-## Versión 1.0
-
-- Login.
-- Mano de cartas.
-- Biblioteca.
-- Historial.
-- Notificaciones.
-- Administración.
-- Generación de mensajes para WhatsApp.
-
-## Versión 1.1
-
-- Animaciones.
-- Sonidos.
-- Estadísticas.
-- Mejoras visuales.
-
-## Versión 2.0
-
-- Integración con Biwenger.
-- Automatización de efectos.
-- Eventos especiales.
-- Nuevas mecánicas.
-
----
-
-# Licencia
-
-Este proyecto ha sido desarrollado exclusivamente para la Munchinking League.
-
-Su código podrá evolucionar para adaptarse a las necesidades futuras de la competición.
-
----
-
-# Autor
-
-Desarrollado para la **Munchinking League** ❤️
+## Orden de lectura recomendado
+
+1. **Negocio y producto:** `00-glossary.md` → `02-functional-specification.md` → `01-user-flows-and-stories.md` → `09-card-catalog-and-templates.md`.
+2. **Diseño y experiencia móvil:** `08-design-system.md`.
+3. **Ingeniería y datos:** `03-architecture.md` → `04-domain-model.md` → `05-data-model.md` → `06-api-contract.md` → `07-project-structure.md`.
+4. **Puesta en marcha e infraestructura:** `10-roadmap-and-execution-plan.md`.

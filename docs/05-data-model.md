@@ -5,9 +5,9 @@
 | Proyecto | Munchinking League |
 | Documento | Modelo de Datos |
 | Archivo | `05-data-model.md` |
-| Versión | 1.0 |
-| Estado | DRAFT |
-| Última actualización | 24/07/2026 |
+| Versión | 1.2 |
+| Estado | APPROVED |
+| Última actualización | 17/11/2026 |
 
 ---
 
@@ -84,34 +84,15 @@ Las columnas utilizarán `snake_case`.
 
 ```text
 league
-
-│
-
 ├── season
-
-│
-
+│   ├── distribution_batch
+│   ├── card_copy
+│   └── card_movement
 ├── manager
-
-│
-
+│   └── notification
 ├── user
-
-│
-
-├── card_definition
-
-│
-
-├── card_copy
-
-│
-
-├── card_movement
-
-│
-
-└── notification
+│   └── session
+└── card_definition
 ```
 
 ---
@@ -186,20 +167,41 @@ Representa una cuenta autenticada.
 | id | UUID | Sí |
 | username | TEXT | Sí |
 | password_hash | TEXT | Sí |
-| role | TEXT | Sí |
+| role | TEXT (`MANAGER` \| `ADMIN`) | Sí |
+| is_active | BOOLEAN | Sí |
 | created_at | DATETIME | Sí |
+| updated_at | DATETIME | Sí |
 
 ---
 
 ## Restricciones
 
-El nombre de usuario deberá ser único.
+El nombre de usuario deberá ser único (normalizado en minúsculas).
 
 ---
 
 ## Relaciones
 
 1:1 con Manager.
+
+1:N con Session.
+
+---
+
+## 4.3b session
+
+Almacena sesiones autenticadas activas para permitir revocación inmediata y cookies seguras `HttpOnly`.
+
+### Campos
+
+| Campo | Tipo | Obligatorio |
+|--------|------|-------------|
+| id | UUID | Sí |
+| user_id | UUID | Sí |
+| token_hash | TEXT | Sí |
+| expires_at | DATETIME | Sí |
+| revoked_at | DATETIME | No |
+| created_at | DATETIME | Sí |
 
 ---
 
@@ -215,7 +217,9 @@ Representa un participante.
 | user_id | UUID | Sí |
 | league_id | UUID | Sí |
 | display_name | TEXT | Sí |
+| team_name | TEXT | No |
 | avatar_url | TEXT | No |
+| is_active | BOOLEAN | Sí |
 | created_at | DATETIME | Sí |
 
 ---
@@ -234,26 +238,33 @@ N:1 con League.
 
 ## 4.5 card_definition
 
-Representa una carta.
+Representa una carta del catálogo.
 
 ### Campos
 
 | Campo | Tipo | Obligatorio |
 |--------|------|-------------|
 | id | UUID | Sí |
+| slug | TEXT | Sí |
 | name | TEXT | Sí |
 | nickname | TEXT | Sí |
 | description | TEXT | Sí |
-| rarity | TEXT | Sí |
+| usage_rules | TEXT | Sí |
+| rarity | TEXT (`COMMON` \| `RARE` \| `EPIC` \| `LEGENDARY`) | Sí |
+| target_type | TEXT (`NONE` \| `MANAGER` \| `PLAYER` \| `FREE_TEXT`) | Sí |
+| default_copies | INTEGER | Sí |
 | image_url | TEXT | Sí |
 | whatsapp_template | TEXT | Sí |
+| is_enabled | BOOLEAN | Sí |
 | created_at | DATETIME | Sí |
 
 ---
 
 ## Restricciones
 
-Las CardDefinition son inmutables durante una temporada.
+- `slug` único para semillas reproducibles y referencias a assets en R2.
+- `default_copies >= 1`.
+- Las `CardDefinition` activas en una temporada mantienen inmutable su identidad semántica.
 
 ---
 
@@ -327,26 +338,42 @@ Constituye el registro histórico permanente del sistema.
 | Campo | Tipo | Obligatorio |
 |--------|------|-------------|
 | id | UUID | Sí |
+| season_id | UUID | Sí |
 | card_copy_id | UUID | Sí |
-| manager_id | UUID | No |
-| movement_type | TEXT | Sí |
+| manager_id | UUID | Sí |
+| actor_user_id | UUID | No |
+| movement_type | TEXT (`DISTRIBUTED` \| `PLAYED` \| `DISCARDED` \| `RETURNED`) | Sí |
+| from_location | TEXT (`DECK` \| `HAND`) | Sí |
+| to_location | TEXT (`DECK` \| `HAND`) | Sí |
+| target_manager_id | UUID | No |
+| target_label | TEXT | No |
+| whatsapp_message | TEXT | No |
+| distribution_batch_id | UUID | No |
+| related_movement_id | UUID | No |
+| notes | TEXT | No |
 | created_at | DATETIME | Sí |
 
 ---
 
 ### Restricciones
 
-Los movimientos nunca podrán modificarse.
-
-Los movimientos nunca podrán eliminarse.
+- Los hechos históricos nunca podrán eliminarse.
+- En movimientos `RETURNED`, `related_movement_id` referencia de forma **UNIQUE** al movimiento `PLAYED` que se revierte, impidiendo devolver dos veces la misma jugada.
+- `season_id` permite consultas rápidas y paginación por temporada activa sin necesidad de hacer join previo con `card_copy`.
 
 ---
 
 ### Relaciones
 
+N:1 con Season.
+
 N:1 con CardCopy.
 
-N:1 con Manager.
+N:1 con Manager (`manager_id`, y opcionalmente `target_manager_id`).
+
+N:1 con User (`actor_user_id`, para saber si intervino un administrador).
+
+N:1 con DistributionBatch (`distribution_batch_id`, cuando procede de un reparto).
 
 ---
 
@@ -354,18 +381,41 @@ N:1 con Manager.
 
 Los valores permitidos serán:
 
-- DISTRIBUTED
-- PLAYED
-- DISCARDED
-- RETURNED
+- `DISTRIBUTED` (`DECK` → `HAND`)
+- `PLAYED` (`HAND` → `DECK`)
+- `DISCARDED` (`HAND` → `DECK`)
+- `RETURNED` (`DECK` → `HAND`)
 
 ---
 
 ### Observaciones
 
-Cada operación sobre una carta generará exactamente un CardMovement.
+Cada operación sobre una carta generará exactamente un `CardMovement`.
 
-El historial completo de una carta podrá reconstruirse ordenando sus movimientos por `created_at`.
+El historial completo de una carta o temporada podrá reconstruirse ordenando sus movimientos por `(created_at DESC, id DESC)`.
+
+---
+
+## 4.7b distribution_batch
+
+Garantiza la idempotencia y auditoría del reparto semanal de cada lunes.
+
+### Campos
+
+| Campo | Tipo | Obligatorio |
+|--------|------|-------------|
+| id | UUID | Sí |
+| season_id | UUID | Sí |
+| week_key | TEXT (`YYYY-Www`) | Sí |
+| trigger_source | TEXT (`CRON` \| `ADMIN`) | Sí |
+| triggered_by_user_id | UUID | No |
+| distributed_count | INTEGER | Sí |
+| skipped_full_hand_count | INTEGER | Sí |
+| created_at | DATETIME | Sí |
+
+### Restricciones
+
+- Índice único compuesto `UNIQUE (season_id, week_key)` para bloquear cualquier doble ejecución en la misma semana.
 
 ---
 
@@ -379,9 +429,12 @@ Representa una notificación dirigida a un manager.
 |--------|------|-------------|
 | id | UUID | Sí |
 | manager_id | UUID | Sí |
+| notification_type | TEXT (`CARD_DISTRIBUTED` \| `CARD_RETURNED` \| `ADMIN_NOTICE`) | Sí |
 | title | TEXT | Sí |
 | message | TEXT | Sí |
+| related_movement_id | UUID | No |
 | is_read | BOOLEAN | Sí |
+| read_at | DATETIME | No |
 | created_at | DATETIME | Sí |
 
 ---
@@ -400,19 +453,35 @@ El campo `is_read` indicará si la notificación ya ha sido consultada.
 
 ---
 
-# 5. Claves foráneas
+# 5. Claves foráneas e índices críticos
 
 | Tabla | Columna | Referencia |
 |--------|---------|------------|
 | season | league_id | league.id |
+| session | user_id | user.id |
 | manager | user_id | user.id |
 | manager | league_id | league.id |
+| distribution_batch | season_id | season.id |
+| distribution_batch | triggered_by_user_id | user.id |
 | card_copy | season_id | season.id |
 | card_copy | card_definition_id | card_definition.id |
 | card_copy | current_manager_id | manager.id |
+| card_movement | season_id | season.id |
 | card_movement | card_copy_id | card_copy.id |
 | card_movement | manager_id | manager.id |
+| card_movement | actor_user_id | user.id |
+| card_movement | target_manager_id | manager.id |
+| card_movement | distribution_batch_id | distribution_batch.id |
+| card_movement | related_movement_id | card_movement.id |
 | notification | manager_id | manager.id |
+| notification | related_movement_id | card_movement.id |
+
+Restricciones SQL / SQLite (D1) obligatorias en las migraciones Drizzle:
+
+- Índice único parcial para temporada activa: `CREATE UNIQUE INDEX idx_season_single_active ON season(league_id) WHERE is_active = 1;`
+- Índice único de reparto semanal: `CREATE UNIQUE INDEX idx_distribution_season_week ON distribution_batch(season_id, week_key);`
+- Índice único de devolución única por jugada: `CREATE UNIQUE INDEX idx_movement_unique_return ON card_movement(related_movement_id) WHERE movement_type = 'RETURNED' AND related_movement_id IS NOT NULL;`
+- Restricción `CHECK` en `card_copy`: `(location = 'DECK' AND current_manager_id IS NULL) OR (location = 'HAND' AND current_manager_id IS NOT NULL)`.
 
 ---
 
@@ -778,3 +847,4 @@ No se utilizarán enums de base de datos para estos campos.
 Versión	Descripción
 1.0	Primera versión del modelo de datos.
 1.1	Se añaden from_location y to_location a card_movement para mantener explícitas las transiciones de las cartas.
+1.2	Se completan tablas `session` y `distribution_batch`, columnas de objetivo/WhatsApp/reversión en `card_movement`, atributos completos de `card_definition` (`slug`, `usage_rules`, `target_type`, `default_copies`) y restricciones `CHECK` / índices únicos parciales para SQLite D1.

@@ -5,9 +5,9 @@
 | Proyecto | Munchinking League |
 | Documento | Estructura del Proyecto |
 | Archivo | `07-project-structure.md` |
-| Versión | 1.0 |
-| Estado | DRAFT |
-| Última actualización | 18/08/2026 |
+| Versión | 1.1 |
+| Estado | APPROVED |
+| Última actualización | 17/11/2026 |
 
 ---
 
@@ -792,21 +792,21 @@ La lógica de negocio permanecerá en `packages/domain`.
 
 # 29. Documentación
 
-El directorio `docs/` contendrá la documentación técnica y funcional del proyecto.
+El directorio `docs/` contendrá la documentación técnica, funcional y operativa oficial del proyecto.
 
-Los documentos deberán mantenerse sincronizados con la implementación.
+Los documentos deberán mantenerse sincronizados con la implementación:
 
-La documentación actualmente definida incluye:
-
-- `glossary.md`
-- Documento funcional.
-- Documento de arquitectura.
-- Modelo de dominio.
-- Modelo de datos.
+- `00-glossary.md`
+- `01-user-flows-and-stories.md`
+- `02-functional-specification.md`
+- `03-architecture.md`
+- `04-domain-model.md`
+- `05-data-model.md`
 - `06-api-contract.md`
 - `07-project-structure.md`
-
-Los nombres definitivos de los documentos podrán ajustarse a la estructura establecida en el repositorio.
+- `08-design-system.md`
+- `09-card-catalog-and-templates.md`
+- `10-roadmap-and-execution-plan.md`
 
 ---
 
@@ -893,3 +893,4 @@ Las decisiones de infraestructura deberán seguir siendo coherentes con el docum
 | Versión | Descripción |
 |----------|-------------|
 | 1.0 | Primera versión de la estructura del proyecto. |
+| 1.1 | Sincronización del índice documental canónico y aprobación de la estructura de monorepo (`apps/web`, `apps/api`, `packages/*`, `db/`). |

@@ -5,9 +5,9 @@
 | Proyecto | Munchinking League |
 | Documento | Contrato de API |
 | Archivo | `06-api-contract.md` |
-| Versión | 1.0 |
-| Estado | DRAFT |
-| Última actualización | 18/08/2026 |
+| Versión | 1.1 |
+| Estado | APPROVED |
+| Última actualización | 17/11/2026 |
 
 ---
 
@@ -132,7 +132,7 @@ Agrupa las operaciones relacionadas con el manager autenticado.
 
 ## 5.1 manager.getProfile
 
-Obtiene la información del manager actual.
+Obtiene la información y métricas personales del manager actual en la temporada activa.
 
 ### Tipo
 
@@ -146,14 +146,16 @@ Ninguna.
 
 - `id: UUID`
 - `displayName: string`
+- `teamName: string | null`
 - `avatarUrl: string | null`
-- `role: string`
+- `role: 'MANAGER' | 'ADMIN'`
+- `stats: { handCount: number; playedCount: number; discardedCount: number; returnedCount: number }`
 
 ---
 
 ## 5.2 manager.getHand
 
-Obtiene las cartas actualmente disponibles para el manager.
+Obtiene las cartas actualmente disponibles para el manager, enriquecidas con su `CardDefinition`.
 
 ### Tipo
 
@@ -165,9 +167,27 @@ Ninguna.
 
 ### Respuesta
 
-- `cards: CardCopy[]`
+- `cards: HandCardDto[]` (incluye `cardCopyId`, `obtainedAt`, `definition: CardDefinitionDto`)
 
-Solo devolverá cartas cuya ubicación actual sea `HAND` y cuyo propietario sea el manager autenticado.
+Solo devolverá cartas de la temporada activa cuya ubicación actual sea `HAND` y cuyo propietario sea el manager autenticado.
+
+---
+
+## 5.3 manager.listTargets
+
+Obtiene la lista de managers activos de la liga para poblar el selector cuando se juega una carta con `targetType = 'MANAGER'`.
+
+### Tipo
+
+`query`
+
+### Entrada
+
+- `excludeSelf?: boolean` (por defecto `true`)
+
+### Respuesta
+
+- `managers: Array<{ id: UUID; displayName: string; teamName: string | null; avatarUrl: string | null }>`
 
 ---
 
@@ -186,6 +206,9 @@ Juega una carta.
 ### Entrada
 
 - `cardCopyId: UUID`
+- `targetManagerId?: UUID` (obligatorio si `definition.targetType === 'MANAGER'`)
+- `targetLabel?: string` (obligatorio si `definition.targetType === 'PLAYER' | 'FREE_TEXT'`, máx. 120 caracteres)
+- `notes?: string` (opcional, máx. 240 caracteres)
 
 ### Validaciones
 
@@ -196,18 +219,18 @@ El backend deberá comprobar:
 3. La CardCopy pertenece a la temporada activa.
 4. La CardCopy pertenece al manager autenticado.
 5. La CardCopy se encuentra en `HAND`.
+6. Los campos de objetivo coinciden exactamente con el `targetType` exigido por la `CardDefinition` (y `targetManagerId` pertenece a la misma `League`).
 
 ### Operación
 
-La operación realizará atómicamente:
+La operación realizará atómicamente mediante `db.batch` con condición optimista:
 
-1. Obtener la CardCopy.
-2. Validar la propiedad.
-3. Cambiar `location` a `DECK`.
-4. Establecer `current_manager_id` a `NULL`.
-5. Crear un `CardMovement`.
-6. Generar el mensaje de WhatsApp.
-7. Devolver el resultado.
+1. Obtener la CardCopy y su CardDefinition.
+2. Validar propiedad y requisitos de objetivo.
+3. Renderizar el mensaje oficial de WhatsApp a partir de `whatsapp_template`.
+4. Cambiar `location` a `DECK` y establecer `current_manager_id` a `NULL` (`WHERE id = cardCopyId AND location = 'HAND' AND current_manager_id = managerId`).
+5. Crear un `CardMovement` (`PLAYED`, `from_location = 'HAND'`, `to_location = 'DECK'`) almacenando `target_manager_id`, `target_label` y `whatsapp_message`.
+6. Devolver el resultado.
 
 ### Respuesta
 
@@ -321,7 +344,7 @@ Permite consultar el catálogo de cartas.
 
 ## 8.1 library.list
 
-Obtiene las CardDefinition disponibles.
+Obtiene las CardDefinition habilitadas junto con el número de copias configuradas en la temporada activa.
 
 ### Tipo
 
@@ -329,15 +352,14 @@ Obtiene las CardDefinition disponibles.
 
 ### Entrada
 
-- `rarity?: string`
+- `rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'`
+- `search?: string`
 
 ### Respuesta
 
-- `cards: CardDefinition[]`
+- `cards: Array<CardDefinitionDto & { seasonCopiesCount: number }>`
 
-La consulta no devolverá CardCopy.
-
-La Biblioteca representa el catálogo de cartas, no las cartas actualmente disponibles en el mazo.
+La consulta no expondrá qué copias concretas están en el mazo o en manos de managers para preservar el secreto de juego.
 
 ---
 
@@ -410,15 +432,9 @@ El backend deberá verificar que la notificación pertenece al manager autentica
 
 ---
 
-# 10. Distribution Router
+## 9.4 notifications.markAllAsRead
 
-Gestiona el reparto semanal de cartas.
-
-El reparto será una operación administrativa.
-
-## 10.1 distribution.execute
-
-Ejecuta el reparto correspondiente a una temporada.
+Marca todas las notificaciones pendientes del manager autenticado como leídas.
 
 ### Tipo
 
@@ -426,17 +442,64 @@ Ejecuta el reparto correspondiente a una temporada.
 
 ### Entrada
 
+Ninguna.
+
+### Respuesta
+
+- `updatedCount: number`
+
+---
+
+# 10. Distribution Router
+
+Gestiona el reparto semanal de cartas.
+
+El reparto automático del Cron Trigger reutiliza el mismo caso de uso interno (`ExecuteDistribution`) que este router administrativo.
+
+## 10.1 distribution.status
+
+Consulta el estado del reparto de la semana ISO actual sobre la temporada activa.
+
+### Tipo
+
+`query`
+
+### Entrada
+
+- `weekKey?: string` (por defecto la semana ISO actual en `Europe/Madrid`)
+
+### Respuesta
+
 - `seasonId: UUID`
+- `weekKey: string`
+- `alreadyExecuted: boolean`
+- `batch: DistributionBatch | null`
+- `availableDeckCopies: number`
+- `eligibleManagersCount: number`
+
+---
+
+## 10.2 distribution.execute
+
+Ejecuta manualmente el reparto correspondiente a la semana activa de una temporada.
+
+### Tipo
+
+`mutation`
+
+### Entrada
+
+- `seasonId?: UUID` (si se omite, toma la temporada activa)
+- `weekKey?: string` (si se omite, calcula la semana ISO actual en `Europe/Madrid`)
 
 ### Validaciones
 
 El backend deberá comprobar:
 
 1. El usuario está autenticado.
-2. El usuario tiene permisos de administrador.
-3. La Season existe.
-4. La Season está activa.
-5. El reparto correspondiente todavía no se ha ejecutado.
+2. El usuario tiene permisos de administrador (`ADMIN`).
+3. La Season existe y está activa.
+4. No existe un `DistributionBatch` previo para `(seasonId, weekKey)` (en caso contrario devuelve `CONFLICT`).
 
 ### Operación
 
@@ -494,9 +557,7 @@ A diferencia del historial público, podrá incluir:
 
 ## 11.2 admin.returnCard
 
-Devuelve una carta jugada a la mano del manager.
-
-Esta operación existe para corregir manualmente una carta que haya sido jugada incorrectamente.
+Devuelve una carta previamente jugada a la mano del manager referenciando de forma inequívoca el movimiento `PLAYED` que se desea revertir.
 
 ### Tipo
 
@@ -504,35 +565,52 @@ Esta operación existe para corregir manualmente una carta que haya sido jugada 
 
 ### Entrada
 
-- `cardCopyId: UUID`
+- `movementId: UUID`
+- `reason?: string` (opcional, máx. 240 caracteres)
 
 ### Validaciones
 
 El backend deberá comprobar:
 
-1. El usuario está autenticado.
-2. El usuario es administrador.
-3. La CardCopy existe.
-4. La CardCopy pertenece a la temporada activa.
-5. La CardCopy se encuentra actualmente en `DECK`.
-6. Existe un manager al que devolver la carta.
+1. El usuario está autenticado y tiene rol `ADMIN`.
+2. El `CardMovement` existe, pertenece a la temporada activa y es de tipo `PLAYED`.
+3. Dicho movimiento no ha sido revertido ya por otro `CardMovement` de tipo `RETURNED` (`related_movement_id = movementId`).
+4. El manager propietario de esa jugada tiene actualmente **menos de 3 cartas** en `HAND` (en caso contrario devuelve `CONFLICT` con código de aplicación `HAND_LIMIT_REACHED`).
+5. La `CardCopy` original se encuentra en `DECK` (o, si ya fue repartida en un reparto posterior, existe en `DECK` otra `CardCopy` disponible de la misma `CardDefinition`).
 
 ### Operación
 
-El sistema:
+El sistema ejecutará atómicamente:
 
-1. Identificará el manager asociado a la última acción que permita determinar el propietario de la carta.
-2. Comprobará que dicho manager puede recibir la carta.
-3. Cambiará `location` a `HAND`.
-4. Establecerá `current_manager_id`.
-5. Creará un CardMovement de tipo `RETURNED`.
+1. Seleccionar la `CardCopy` disponible en `DECK` (priorizando la copia original del movimiento).
+2. Cambiar `location` a `HAND` y establecer `current_manager_id` al manager de la jugada original.
+3. Crear un `CardMovement` de tipo `RETURNED` (`from_location = 'DECK'`, `to_location = 'HAND'`, `related_movement_id = movementId`, `actor_user_id = adminUser.id`, `notes = reason`).
+4. Crear una `Notification` de tipo `CARD_RETURNED` dirigida al manager afectado.
 
 ### Respuesta
 
 - `card: CardCopy`
 - `movement: CardMovement`
 
-La carta volverá inmediatamente a la mano del manager.
+---
+
+## 11.3 admin.sendNotice
+
+Envía un aviso administrativo interno a un manager específico o a todos los managers activos de la liga.
+
+### Tipo
+
+`mutation`
+
+### Entrada
+
+- `title: string`
+- `message: string`
+- `targetManagerId?: UUID` (si se omite, se envía a todos los managers activos)
+
+### Respuesta
+
+- `deliveredCount: number`
 
 ---
 
@@ -685,3 +763,4 @@ Una futura integración con Biwenger podrá añadirse sin modificar el contrato 
 | Versión | Descripción |
 |----------|-------------|
 | 1.0 | Primera versión del contrato de API. |
+| 1.1 | Se añaden parámetros de objetivo en `cards.play`, estadísticas de perfil en `manager.getProfile`, `manager.listTargets`, búsqueda y copias de temporada en `library.list`, `notifications.markAllAsRead`, `distribution.status`, devolución determinista por `movementId` en `admin.returnCard` y `admin.sendNotice`. |

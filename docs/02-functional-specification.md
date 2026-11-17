@@ -5,9 +5,9 @@
 | Proyecto | Munchinking League |
 | Documento | Especificación Funcional |
 | Archivo | `02-functional-specification.md` |
-| Versión | 1.0 |
-| Estado | DRAFT |
-| Última actualización | 23/07/2026 |
+| Versión | 1.1 |
+| Estado | APPROVED |
+| Última actualización | 17/11/2026 |
 
 ---
 
@@ -70,7 +70,9 @@ La aplicación deberá permitir que cualquier manager pueda:
 El administrador, además, podrá:
 
 - Consultar el historial completo.
-- Devolver cartas jugadas a la mano de un manager.
+- Ejecutar manualmente o auditar el reparto semanal de cartas.
+- Devolver cartas jugadas a la mano de un manager cuando exista una incidencia.
+- Enviar avisos administrativos a managers.
 - Gestionar las incidencias derivadas del uso de cartas.
 
 ---
@@ -198,9 +200,11 @@ La carta pasa al foco de la pantalla mostrando las acciones disponibles.
 
 El usuario pulsa **Jugar**.
 
+Si la definición de la carta requiere información contextual de objetivo (`MANAGER`, `PLAYER` o `FREE_TEXT`), la aplicación solicita dicho dato antes de confirmar la jugada.
+
 La aplicación:
 
-- Registra el movimiento.
+- Registra el movimiento con el objetivo indicado (si aplica) y el mensaje oficial generado.
 - Genera el mensaje para WhatsApp.
 - Devuelve inmediatamente la carta al mazo.
 - Actualiza el historial público.
@@ -228,14 +232,15 @@ Las cartas descartadas no aparecerán en el historial público.
 
 ## 5.5 Devolución de una carta
 
-El administrador podrá devolver una carta previamente jugada.
+El administrador podrá devolver una carta previamente jugada a partir de su movimiento `PLAYED`.
 
 Al devolver una carta:
 
-- La carta volverá a la mano del manager.
-- Se registrará el movimiento correspondiente.
-- El historial público no será modificado.
-- El historial administrativo conservará el registro de la devolución.
+- Se verificará que dicho movimiento no haya sido devuelto ya y que el manager destinatario tenga menos de tres cartas en su mano.
+- La carta (la misma copia física si continúa libre en el mazo o una copia equivalente disponible de la misma definición) volverá a la mano del manager.
+- Se registrará un nuevo movimiento `RETURNED` referenciando la jugada original y el motivo opcional del administrador.
+- El movimiento original permanecerá intacto en base de datos, quedando marcado como revertido para evitar confusiones en el historial público sin eliminar información histórica.
+- Se generará una notificación personal para el manager afectado.
 
 ---
 
@@ -401,15 +406,10 @@ Permite consultar las cartas jugadas durante la temporada.
 
 ### Vista de Manager
 
-Mostrará:
+Dispondrá de dos pestañas:
 
-- Cartas jugadas.
-- Orden cronológico inverso.
-
-No mostrará:
-
-- Cartas descartadas.
-- Cartas repartidas.
+- **Público:** mostrará todas las cartas jugadas de la liga en orden cronológico inverso (indicando visualmente si alguna jugada fue posteriormente devuelta por el administrador). Nunca mostrará repartos ni descartes de otros managers.
+- **Mis movimientos:** mostrará exclusivamente el historial personal del manager autenticado (`DISTRIBUTED`, `PLAYED`, `DISCARDED`, `RETURNED`).
 
 ---
 
@@ -649,11 +649,13 @@ No existe un número mínimo de cartas.
 
 ## 8.3 Reparto semanal
 
-Cada lunes se realizará automáticamente un reparto de cartas.
+Cada lunes (`08:00 Europe/Madrid`) se realizará automáticamente un reparto de cartas mediante tarea programada en el backend, existiendo además disparo manual idempotente desde el panel de administración como respaldo operativo.
 
-Cada manager recibirá una única carta siempre que tenga menos de tres cartas en su mano.
+Cada semana ISO (`YYYY-Www`) solo podrá ejecutarse una vez por temporada activa.
 
-Las cartas se repartirán aleatoriamente desde el mazo.
+Cada manager activo recibirá una única carta siempre que tenga menos de tres cartas en su mano en el instante del reparto.
+
+Las cartas se repartirán aleatoriamente desde las copias disponibles en `DECK` mediante un orden aleatorio imparcial. Si en un caso extremo hubiera menos copias disponibles en `DECK` que managers elegibles, se repartirán hasta agotar el mazo registrando la incidencia en el lote de reparto.
 
 La recepción de cartas generará una notificación personal.
 
@@ -1071,3 +1073,4 @@ La evolución funcional prevista para la aplicación será la siguiente.
 | Versión | Descripción |
 |----------|-------------|
 | 1.0 | Primera versión de la especificación funcional del MVP de Munchinking League. |
+| 1.1 | Precisión sobre captura de objetivos al jugar cartas, pestañas Público/Personal en Historial, devolución administrativa referenciada a `movementId` respetando límite de mano e idempotencia semanal del reparto. |
