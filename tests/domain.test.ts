@@ -6,6 +6,7 @@ import {
   computeIsoWeekKey,
   DomainRuleError,
   planWeeklyDistribution,
+  validatePlayTarget,
   type CardCopy,
   type CardDefinition,
   type Manager,
@@ -105,6 +106,33 @@ describe('Domain — Card lifecycle & WhatsApp formatting', () => {
         nowIso: '2026-11-17T19:14:00.000Z'
       })
     ).toThrowError(DomainRuleError);
+  });
+
+  it('rejects target fields that do not match the card target type', () => {
+    expect(() =>
+      validatePlayTarget('MANAGER', actorManager.leagueId, {
+        targetManager: rivalManager,
+        targetLabel: 'unexpected text'
+      })
+    ).toThrowError(DomainRuleError);
+
+    expect(() =>
+      validatePlayTarget('PLAYER', actorManager.leagueId, {
+        targetManager: rivalManager,
+        targetLabel: 'player name'
+      })
+    ).toThrowError(DomainRuleError);
+
+    expect(() =>
+      validatePlayTarget('FREE_TEXT', actorManager.leagueId, {
+        targetManager: rivalManager,
+        targetLabel: 'free text target'
+      })
+    ).toThrowError(DomainRuleError);
+
+    expect(() => validatePlayTarget('NONE', actorManager.leagueId, { targetLabel: 'extra' })).toThrowError(
+      DomainRuleError
+    );
   });
 
   it('discards a card returning it to DECK without WhatsApp message', () => {

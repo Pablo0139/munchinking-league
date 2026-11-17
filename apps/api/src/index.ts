@@ -1,6 +1,7 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { computeIsoWeekKey } from '@munchinking/domain';
 import { appRouter } from './routers/index';
+import { executeDistribution } from './services/distribution';
 import { createTrpcContext, type WorkerEnv } from './trpc/context';
 
 function buildCorsHeaders(req: Request, env: WorkerEnv): Headers {
@@ -61,10 +62,35 @@ export default {
   },
 
   async scheduled(controller: ScheduledController, env: WorkerEnv): Promise<void> {
-    const weekKey = computeIsoWeekKey(
-      new Date(controller.scheduledTime),
-      env.APP_TIMEZONE ?? 'Europe/Madrid'
-    );
-    console.info(`[scheduled] Weekly distribution trigger received for ${weekKey}`);
+    const scheduledAt = new Date(controller.scheduledTime);
+    const weekKey = computeIsoWeekKey(scheduledAt, env.APP_TIMEZONE ?? 'Europe/Madrid');
+    const activeLeague = await env.DB.prepare(
+      `SELECT l.id AS leagueId FROM league l
+       INNER JOIN season s ON s.league_id = l.id
+       WHERE s.is_active = 1 ORDER BY l.created_at LIMIT 1`
+    ).first<{ leagueId: string }>();
+
+    if (!activeLeague) {
+      console.warn('[scheduled] No active league/season; distribution skipped.');
+      return;
+    }
+
+    try {
+      const result = await executeDistribution({
+        db: env.DB,
+        leagueId: activeLeague.leagueId,
+        weekKey,
+        actorUserId: null,
+        triggerSource: 'CRON'
+      });
+      console.info(`[scheduled] Distributed ${result.distributed} cards for ${weekKey}.`);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('ya se ha ejecutado')) {
+        console.info(`[scheduled] Distribution for ${weekKey} was already completed.`);
+        return;
+      }
+      console.error(`[scheduled] Distribution failed for ${weekKey}.`, error);
+      throw error;
+    }
   }
 };

@@ -39,6 +39,12 @@ export function validatePlayTarget(
       return { targetManagerId: null, targetLabel: null, resolvedDisplayTarget: null };
     }
     case 'MANAGER': {
+      if (input.targetLabel != null) {
+        throw new DomainRuleError(
+          'UNEXPECTED_TARGET',
+          'Esta carta requiere un manager y no admite texto de objetivo.'
+        );
+      }
       if (!input.targetManager) {
         throw new DomainRuleError(
           'TARGET_REQUIRED',
@@ -60,6 +66,12 @@ export function validatePlayTarget(
     }
     case 'PLAYER':
     case 'FREE_TEXT': {
+      if (input.targetManager) {
+        throw new DomainRuleError(
+          'UNEXPECTED_TARGET',
+          'Esta carta requiere un objetivo de texto y no admite seleccionar un manager.'
+        );
+      }
       if (cleanedLabel.length === 0 || cleanedLabel.length > MAX_TARGET_LABEL_LENGTH) {
         throw new DomainRuleError(
           'TARGET_REQUIRED',

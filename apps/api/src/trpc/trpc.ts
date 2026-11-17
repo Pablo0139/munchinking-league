@@ -4,9 +4,15 @@ import type { TrpcContext } from './context';
 const t = initTRPC.context<TrpcContext>().create();
 
 export const router = t.router;
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure.use(({ ctx, next }) => {
+  const origin = ctx.req.headers.get('Origin');
+  if (origin && origin !== (ctx.env.APP_ORIGIN ?? 'http://localhost:5173')) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Origen de solicitud no permitido.' });
+  }
+  return next();
+});
 
-export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
   if (!ctx.auth) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
