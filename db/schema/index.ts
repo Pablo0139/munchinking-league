@@ -139,10 +139,20 @@ export const distributionBatch = sqliteTable(
     }),
     distributedCount: integer('distributed_count').notNull(),
     skippedFullHandCount: integer('skipped_full_hand_count').notNull(),
+    skippedFullHandManagers: text('skipped_full_hand_managers', { mode: 'json' }).$type<
+      Array<{ id: string; displayName: string }>
+    >(),
     createdAt: text('created_at').notNull()
   },
   (table) => [
-    uniqueIndex('idx_distribution_season_week').on(table.seasonId, table.weekKey),
+    uniqueIndex('idx_distribution_season_week_cron')
+      .on(table.seasonId, table.weekKey)
+      .where(sql`${table.triggerSource} = 'CRON'`),
+    index('idx_distribution_season_week_created').on(
+      table.seasonId,
+      table.weekKey,
+      table.createdAt
+    ),
     index('idx_distribution_season_created').on(table.seasonId, table.createdAt)
   ]
 );

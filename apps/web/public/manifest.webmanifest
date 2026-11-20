@@ -6,5 +6,12 @@
   "display": "standalone",
   "background_color": "#F7F5FB",
   "theme_color": "#6D28D9",
-  "lang": "es"
+  "lang": "es",
+  "id": "/",
+  "scope": "/",
+  "icons": [
+    { "src": "/icons/league-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/league-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/league-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }

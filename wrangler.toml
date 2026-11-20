@@ -15,6 +15,7 @@ database_name = "munchinking-db"
 database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "db/migrations"
 
+# Used by local development only; staging intentionally has no R2 binding.
 [[r2_buckets]]
 binding = "ASSETS_BUCKET"
 bucket_name = "munchinking-assets"
@@ -29,12 +30,8 @@ APP_ORIGIN = "https://develop.munchinking-league.pages.dev"
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "munchinking-db-staging"
-database_id = "00000000-0000-0000-0000-000000000001"
+database_id = "eef4f9a3-e406-4dd1-8b93-54abe2882dff"
 migrations_dir = "db/migrations"
-
-[[env.staging.r2_buckets]]
-binding = "ASSETS_BUCKET"
-bucket_name = "munchinking-assets-staging"
 
 [env.production]
 name = "munchinking-api"

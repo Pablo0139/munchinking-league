@@ -1,0 +1,47 @@
+.ml-focus {
+  box-sizing: border-box;
+  position: fixed;
+  inset: auto 0 0;
+  margin: 0 auto;
+  width: min(100%, 30rem);
+  max-width: 100%;
+  max-height: 92dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #dfd7f0;
+  border-radius: 1.25rem 1.25rem 0 0;
+  padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
+  color: #1b1429;
+  background: #fff;
+  box-shadow: 0 1rem 4rem #20103440;
+  overflow-wrap: anywhere;
+}
+.ml-focus::backdrop { background: rgb(20 13 32 / 55%); backdrop-filter: blur(2px); }
+.ml-focus__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.ml-focus__header small { color: #594f6e; font-weight: 700; letter-spacing: .12em; }
+.ml-focus h2 { font-size: 1.25rem; font-weight: 800; }
+.ml-focus h3, .ml-focus label { font-weight: 700; }
+.ml-focus p { margin: .65rem 0; line-height: 1.5; }
+.ml-focus__rules { white-space: pre-wrap; }
+.ml-focus__card { width: min(100%, 18.75rem); margin: 0 auto 1rem; }
+.ml-focus label { display: block; margin: 1rem 0; }
+.ml-focus :is(input, select, textarea) {
+  display: block; box-sizing: border-box; width: 100%; margin-top: .35rem; padding: .65rem;
+  min-height: 44px; border: 1px solid #81748e; border-radius: .6rem; font: inherit; font-weight: 400;
+  color: #1b1429; background: #fff;
+}
+.ml-focus textarea { resize: vertical; }
+.ml-focus__actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+.ml-focus__actions button { flex: 1 1 auto; }
+.ml-focus button {
+  min-height: 44px; min-width: 44px; padding: .55rem .9rem; border: 1px solid #81748e;
+  border-radius: .7rem; background: #fff; color: #1b1429; font-weight: 700; cursor: pointer;
+}
+.ml-focus .ml-focus__primary { background: #6d28d9; border-color: #6d28d9; color: #fff; }
+.ml-focus .ml-focus__danger { border-color: #be123c; color: #a31036; }
+.ml-focus button:disabled { opacity: .55; cursor: not-allowed; }
+.ml-focus :focus-visible { outline: 3px solid #6d28d9; outline-offset: 2px; }
+.ml-focus [role='alert'] { color: #a31036; }
+@media (min-width: 40rem) {
+  .ml-focus { inset: 0; margin: auto; border-radius: 1.25rem; }
+}

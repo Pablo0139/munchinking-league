@@ -5,9 +5,9 @@
 | Proyecto             | Munchinking League |
 | Documento            | Modelo de Datos    |
 | Archivo              | `05-data-model.md` |
-| Versión              | 1.2                |
-| Estado               | APPROVED           |
-| Última actualización | 17/11/2026         |
+| Versión              | 1.3                |
+| Estado               | Ampliación de Fase 5 en local |
+| Última actualización | 20/11/2026         |
 
 ---
 
@@ -412,11 +412,17 @@ Garantiza la idempotencia y auditoría del reparto semanal de cada lunes.
 | triggered_by_user_id    | UUID                     | No          |
 | distributed_count       | INTEGER                  | Sí          |
 | skipped_full_hand_count | INTEGER                  | Sí          |
+| skipped_full_hand_managers | TEXT (JSON)           | No          |
 | created_at              | DATETIME                 | Sí          |
+
+`skipped_full_hand_count` cuenta los mánagers excluidos por tener tres cartas en la mano. `skipped_full_hand_managers` guarda sus datos **en el momento del reparto** como una lista de objetos `{ id, displayName }`; no se reconstruye a partir de las manos actuales. `[]` indica que no se excluyó a nadie por mano llena. Los lotes anteriores conservan `NULL`: el recuento existe, pero no se registró la lista.
+
+La [migración 0001](../db/migrations/0001_distribution_full_hand_snapshot.sql) añade la columna sin rellenar los lotes anteriores. La [migración 0002](../db/migrations/0002_allow_multiple_manual_distributions.sql) sustituye la unicidad semanal estricta por un índice único parcial sobre `CRON` para permitir repartos manuales adicionales autorizados por `ADMIN`. Ambas deben aplicarse en cada entorno **antes del nuevo Worker**.
 
 ### Restricciones
 
-- Índice único compuesto `UNIQUE (season_id, week_key)` para bloquear cualquier doble ejecución en la misma semana.
+- Índice único parcial `UNIQUE (season_id, week_key) WHERE trigger_source = 'CRON'` para bloquear cualquier doble ejecución automática en la misma semana.
+- Índice `idx_distribution_season_week_created (season_id, week_key, created_at)` para consultar con rapidez el último lote y el recuento semanal.
 
 ---
 
@@ -850,3 +856,4 @@ Versión Descripción
 1.0 Primera versión del modelo de datos.
 1.1 Se añaden from_location y to_location a card_movement para mantener explícitas las transiciones de las cartas.
 1.2 Se completan tablas `session` y `distribution_batch`, columnas de objetivo/WhatsApp/reversión en `card_movement`, atributos completos de `card_definition` (`slug`, `usage_rules`, `target_type`, `default_copies`) y restricciones `CHECK` / índices únicos parciales para SQLite D1.
+1.3 Se documenta el snapshot de manos llenas del reparto semanal.

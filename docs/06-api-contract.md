@@ -5,9 +5,9 @@
 | Proyecto             | Munchinking League   |
 | Documento            | Contrato de API      |
 | Archivo              | `06-api-contract.md` |
-| Versión              | 1.1                  |
-| Estado               | APPROVED             |
-| Última actualización | 17/11/2026           |
+| Versión              | 1.3                  |
+| Estado               | Implementado en local (ampliaciones de Fase 5) |
+| Última actualización | 20/11/2026           |
 
 ---
 
@@ -294,13 +294,14 @@ Obtiene el historial público de cartas jugadas.
 
 - `limit: number`
 - `cursor?: string`
+- `activeOnly?: boolean` (por defecto `false`; el carrusel de inicio solicita `true`).
 
 ### Respuesta
 
 - `items: HistoryItem[]`
 - `nextCursor: string | null`
 
-Solo incluirá movimientos de tipo `PLAYED`.
+Solo incluye movimientos `PLAYED`. Cada fila indica `isReturned: boolean`: la jugada original se conserva si fue devuelta. Con `activeOnly: true` se omiten las jugadas devueltas **antes** de paginar. El orden es `createdAt DESC, id DESC`.
 
 No mostrará:
 
@@ -383,10 +384,10 @@ Obtiene las notificaciones del manager autenticado.
 
 ### Respuesta
 
-- `items: Notification[]`
+- `items: Array<Notification & { card: NoticeCard | null }>`
 - `nextCursor: string | null`
 
-Las notificaciones se devolverán ordenadas de más reciente a más antigua.
+Las notificaciones se devuelven de más reciente a más antigua (`createdAt DESC, id DESC`). `card` contiene `name`, `nickname`, `description`, `usageRules`, `rarity`, `targetType` e `imageUrl` solo en un aviso `CARD_DISTRIBUTED` asociado a un movimiento de reparto del destinatario. No depende del propietario actual ni revela dónde está la copia. Sin un reparto válido, su valor es `null`.
 
 ---
 
@@ -408,7 +409,7 @@ Ninguna.
 
 El frontend utilizará este valor para mostrar el contador de notificaciones.
 
-El contador visual tendrá un máximo de `+9`.
+El contador visual se oculta con cero, muestra `1` a `9` y muestra `9+` a partir de diez.
 
 ---
 
@@ -428,7 +429,7 @@ Marca una notificación como leída.
 
 - `notification: Notification`
 
-El backend deberá verificar que la notificación pertenece al manager autenticado.
+El backend verifica que la notificación pertenece al manager autenticado. Repetir la operación conserva la fecha de la primera lectura (`readAt`).
 
 ---
 
@@ -458,7 +459,7 @@ El reparto automático del Cron Trigger reutiliza el mismo caso de uso interno (
 
 ## 10.1 distribution.status
 
-Consulta el estado del reparto de la semana ISO actual sobre la temporada activa.
+Solo `ADMIN`. Consulta el lote de la semana solicitada en la temporada activa. Sin temporada activa devuelve `PRECONDITION_FAILED`.
 
 ### Tipo
 
@@ -473,15 +474,19 @@ Consulta el estado del reparto de la semana ISO actual sobre la temporada activa
 - `seasonId: UUID`
 - `weekKey: string`
 - `alreadyExecuted: boolean`
-- `batch: DistributionBatch | null`
+- `weekBatchCount: number`
+- `batch: DistributionBatch | null` (último lote registrado en esa semana, ordenado por `createdAt DESC, id DESC`)
+- `skippedFullHandManagers: Array<{ id: string; displayName: string }> | null`
 - `availableDeckCopies: number`
 - `eligibleManagersCount: number`
+
+`skippedFullHandManagers` está al mismo nivel que `batch`. Si no hay lote, ambos son `null` y `weekBatchCount` es `0`. Si hay un lote antiguo sin snapshot, `batch` contiene el lote y la lista es `null` (desconocida). `[]` significa que sí se guardó el snapshot y nadie quedó fuera por mano llena. Los dos contadores de disponibilidad reflejan el estado actual, no el del momento del reparto.
 
 ---
 
 ## 10.2 distribution.execute
 
-Ejecuta manualmente el reparto correspondiente a la semana activa de una temporada.
+Ejecuta manualmente un reparto en la semana activa de una temporada.
 
 ### Tipo
 
@@ -491,6 +496,8 @@ Ejecuta manualmente el reparto correspondiente a la semana activa de una tempora
 
 - `seasonId?: UUID` (si se omite, toma la temporada activa)
 - `weekKey?: string` (si se omite, calcula la semana ISO actual en `Europe/Madrid`)
+- `forceAdditional?: boolean` (por defecto `false`; si es `true`, autoriza crear un lote manual adicional en una semana que ya tiene lotes previos)
+- `expectedWeekBatchCount?: number` (control optimista opcional; si no coincide con el número actual de lotes de la semana, devuelve `CONFLICT` para evitar duplicados por doble envío concurrente)
 
 ### Validaciones
 
@@ -499,7 +506,9 @@ El backend deberá comprobar:
 1. El usuario está autenticado.
 2. El usuario tiene permisos de administrador (`ADMIN`).
 3. La Season existe y está activa.
-4. No existe un `DistributionBatch` previo para `(seasonId, weekKey)` (en caso contrario devuelve `CONFLICT`).
+4. Si `forceAdditional` no es `true`, no existe ningún `DistributionBatch` previo para `(seasonId, weekKey)` (en caso contrario devuelve `CONFLICT`). El Cron Trigger nunca activa `forceAdditional`.
+5. Si se informa `expectedWeekBatchCount`, coincide exactamente con el número de lotes existentes de `(seasonId, weekKey)` en el instante de insertar el lote; de lo contrario devuelve `CONFLICT`.
+6. Si se envía una `weekKey` distinta de la semana ISO actual, devuelve `CONFLICT` sin repartir. El cliente debe volver a consultar el estado antes de confirmar.
 
 ### Operación
 
@@ -516,6 +525,9 @@ El sistema:
 ### Respuesta
 
 - `distributed: number`
+- `seasonId: UUID`
+- `weekKey: string`
+- `skippedFullHandCount: number`
 - `movements: CardMovement[]`
 
 ---
@@ -575,7 +587,7 @@ El backend deberá comprobar:
 1. El usuario está autenticado y tiene rol `ADMIN`.
 2. El `CardMovement` existe, pertenece a la temporada activa y es de tipo `PLAYED`.
 3. Dicho movimiento no ha sido revertido ya por otro `CardMovement` de tipo `RETURNED` (`related_movement_id = movementId`).
-4. El manager propietario de esa jugada tiene actualmente **menos de 3 cartas** en `HAND` (en caso contrario devuelve `CONFLICT` con código de aplicación `HAND_LIMIT_REACHED`).
+4. El mánager propietario de esa jugada tiene actualmente **menos de 3 cartas** en `HAND`. Si la mano está llena, devuelve `CONFLICT` con `error.data.appCode` igual a `HAND_LIMIT_REACHED`.
 5. La `CardCopy` original se encuentra en `DECK` (o, si ya fue repartida en un reparto posterior, existe en `DECK` otra `CardCopy` disponible de la misma `CardDefinition`).
 
 ### Operación
@@ -591,6 +603,7 @@ El sistema ejecutará atómicamente:
 
 - `card: CardCopy`
 - `movement: CardMovement`
+- `notification: Notification` (el aviso de la devolución)
 
 ---
 
@@ -611,6 +624,12 @@ Envía un aviso administrativo interno a un manager específico o a todos los ma
 ### Respuesta
 
 - `deliveredCount: number`
+
+---
+
+## 11.4 admin.roster
+
+`query` exclusiva de `ADMIN`, **sin entrada**. Devuelve `{ managers }` con los mánagers de la liga, también los inactivos. Cada elemento contiene `id: UUID`, `displayName: string`, `isActive: boolean` y `handCount: number` (cartas en mano de la temporada activa). El panel usa esta lista para filtrar el historial y elegir destinatarios.
 
 ---
 
@@ -764,3 +783,5 @@ Una futura integración con Biwenger podrá añadirse sin modificar el contrato 
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0     | Primera versión del contrato de API.                                                                                                                                                                                                                                                                                  |
 | 1.1     | Se añaden parámetros de objetivo en `cards.play`, estadísticas de perfil en `manager.getProfile`, `manager.listTargets`, búsqueda y copias de temporada en `library.list`, `notifications.markAllAsRead`, `distribution.status`, devolución determinista por `movementId` en `admin.returnCard` y `admin.sendNotice`. |
+| 1.2     | Se documentan `isReturned` y el filtro `activeOnly` del historial público, el detalle de carta del reparto personal y la lectura idempotente de avisos. |
+| 1.3     | Se precisa el contrato administrativo de plantilla, devolución y reparto semanal según los routers locales de Fase 5. |

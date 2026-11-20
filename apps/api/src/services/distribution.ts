@@ -1,4 +1,5 @@
 import { planWeeklyDistribution, type CardCopy } from '@munchinking/domain';
+import { MAX_HAND_SIZE } from '@munchinking/shared';
 import type { D1Database } from '@cloudflare/workers-types';
 import { TRPCError } from '@trpc/server';
 import { getActiveSeason, isUniqueConstraintError } from './data';
@@ -30,6 +31,8 @@ export async function executeDistribution(params: {
   weekKey: string;
   actorUserId: string | null;
   triggerSource: 'ADMIN' | 'CRON';
+  allowAdditionalForWeek?: boolean;
+  expectedWeekBatchCount?: number;
 }): Promise<DistributionResult> {
   const activeSeason = await getActiveSeason(params.db, params.leagueId);
   if (!activeSeason || (params.seasonId && params.seasonId !== activeSeason.id)) {
@@ -39,15 +42,29 @@ export async function executeDistribution(params: {
     });
   }
 
-  const existing = await params.db
-    .prepare('SELECT id FROM distribution_batch WHERE season_id = ? AND week_key = ? LIMIT 1')
-    .bind(activeSeason.id, params.weekKey)
-    .first<{ id: string }>();
-  if (existing) {
-    throw new TRPCError({
-      code: 'CONFLICT',
-      message: 'El reparto de esta semana ya se ha ejecutado.'
-    });
+  const requireUnreadWeek =
+    params.triggerSource === 'CRON' || !params.allowAdditionalForWeek;
+  if (requireUnreadWeek || params.expectedWeekBatchCount !== undefined) {
+    const existingCount = await params.db
+      .prepare('SELECT COUNT(*) AS count FROM distribution_batch WHERE season_id = ? AND week_key = ?')
+      .bind(activeSeason.id, params.weekKey)
+      .first<{ count: number }>();
+    const currentWeekBatches = existingCount?.count ?? 0;
+    if (requireUnreadWeek && currentWeekBatches > 0) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: 'El reparto de esta semana ya se ha ejecutado.'
+      });
+    }
+    if (
+      params.expectedWeekBatchCount !== undefined &&
+      currentWeekBatches !== params.expectedWeekBatchCount
+    ) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: 'El número de lotes de la semana ha cambiado. Actualiza el estado antes de confirmar.'
+      });
+    }
   }
 
   const [managerRows, deckRows] = await Promise.all([
@@ -90,13 +107,28 @@ export async function executeDistribution(params: {
     createUuid: newId
   });
 
+  const expectedBatchCount =
+    params.expectedWeekBatchCount !== undefined ? params.expectedWeekBatchCount : -1;
   const statements = [
     params.db
       .prepare(
         `INSERT INTO distribution_batch
          (id, season_id, week_key, trigger_source, triggered_by_user_id, distributed_count,
-          skipped_full_hand_count, created_at)
-         VALUES (?, ?, ?, ?, ?, 0, ?, ?)`
+          skipped_full_hand_count, skipped_full_hand_managers, created_at)
+         SELECT ?, ?, ?, ?, ?, 0, COUNT(*), json_group_array(json_object('id', id, 'displayName', display_name)), ?
+         FROM (
+           SELECT m.id, m.display_name FROM manager m
+           JOIN card_copy c ON c.current_manager_id = m.id AND c.season_id = ? AND c.location = 'HAND'
+           WHERE m.league_id = ? AND m.is_active = 1
+           GROUP BY m.id HAVING COUNT(*) >= ? ORDER BY m.id
+         )
+         WHERE (? = 1 OR NOT EXISTS (
+           SELECT 1 FROM distribution_batch WHERE season_id = ? AND week_key = ?
+         ))
+         AND (? < 0 OR (
+           SELECT COUNT(*) FROM distribution_batch WHERE season_id = ? AND week_key = ?
+         ) = ?)
+         RETURNING skipped_full_hand_count AS skippedFullHandCount`
       )
       .bind(
         batchId,
@@ -104,8 +136,17 @@ export async function executeDistribution(params: {
         params.weekKey,
         params.triggerSource,
         params.actorUserId,
-        plan.skippedFullHandCount,
-        createdAt
+        createdAt,
+        activeSeason.id,
+        params.leagueId,
+        MAX_HAND_SIZE,
+        requireUnreadWeek ? 0 : 1,
+        activeSeason.id,
+        params.weekKey,
+        expectedBatchCount,
+        activeSeason.id,
+        params.weekKey,
+        expectedBatchCount
       )
   ];
 
@@ -115,12 +156,14 @@ export async function executeDistribution(params: {
         .prepare(
           `UPDATE card_copy SET location = 'HAND', current_manager_id = ?
            WHERE id = ? AND season_id = ? AND location = 'DECK' AND current_manager_id IS NULL
+             AND EXISTS (SELECT 1 FROM distribution_batch WHERE id = ?)
              AND (SELECT COUNT(*) FROM card_copy WHERE current_manager_id = ? AND season_id = ? AND location = 'HAND') < 3`
         )
         .bind(
           assignment.managerId,
           assignment.updatedCardCopy.id,
           activeSeason.id,
+          batchId,
           assignment.managerId,
           activeSeason.id
         ),
@@ -171,9 +214,21 @@ export async function executeDistribution(params: {
       .bind(batchId, batchId)
   );
 
+  let skippedFullHandCount: number;
   try {
-    await params.db.batch(statements);
+    const [inserted] = await params.db.batch<{ skippedFullHandCount: number }>(statements);
+    const firstRow = inserted?.results?.[0];
+    if (!firstRow) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: 'El reparto de esta semana ya se ha ejecutado.'
+      });
+    }
+    skippedFullHandCount = firstRow.skippedFullHandCount;
   } catch (error) {
+    if (error instanceof TRPCError) {
+      throw error;
+    }
     if (isUniqueConstraintError(error)) {
       throw new TRPCError({
         code: 'CONFLICT',
@@ -194,7 +249,7 @@ export async function executeDistribution(params: {
     seasonId: activeSeason.id,
     weekKey: params.weekKey,
     distributed: persisted.results?.length ?? 0,
-    skippedFullHandCount: plan.skippedFullHandCount,
+    skippedFullHandCount,
     movements: (persisted.results ?? []).map((movement) => ({
       ...movement,
       movementType: 'DISTRIBUTED',

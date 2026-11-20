@@ -1,0 +1,17 @@
+.ml-admin-jumps, .ml-admin-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.ml-admin-jumps a, .ml-admin-actions button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: .5rem .85rem; border: 1px solid var(--border-subtle); border-radius: .7rem; font-weight: 700; }
+.ml-admin-jumps a, .ml-admin-actions button:not(.ml-primary) { color: var(--brand-primary-hover); background: white; }
+.ml-admin-jumps a:hover { background: var(--bg-elevated); }
+.ml-admin-board, .ml-admin-side, .ml-admin-form, .ml-admin-filters { display: grid; gap: 1rem; align-items: start; }
+.ml-admin-board > *, .ml-admin-side > * { min-width: 0; scroll-margin-top: 4.5rem; }
+.ml-admin-form textarea { width: 100%; padding: .65rem .8rem; border: 1px solid #9687a7; border-radius: .65rem; background: white; color: var(--text-primary); font-size: 1rem; font-weight: 400; resize: vertical; }
+.ml-admin :is(h3, .ml-admin-row strong) { font-weight: 750; }
+.ml-admin-meta { color: var(--text-secondary); font-size: .85rem; overflow-wrap: anywhere; }
+.ml-admin-meta time { display: inline; }
+.ml-admin-row details { margin-top: .5rem; }
+.ml-admin .ml-pill { justify-self: start; }
+.ml-admin p[role=status]:empty { margin: 0; height: 0; }
+@media(min-width: 48rem) {
+  .ml-admin-board { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  .ml-admin-filters { grid-template-columns: 1fr 1fr; }
+}

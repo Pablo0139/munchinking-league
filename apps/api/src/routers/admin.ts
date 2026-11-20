@@ -1,5 +1,6 @@
 import { applyReturnCard, DomainRuleError } from '@munchinking/domain';
 import {
+  MAX_HAND_SIZE,
   cursorPaginationInputSchema,
   movementTypeSchema,
   returnCardInputSchema,
@@ -18,6 +19,19 @@ const adminHistoryInput = cursorPaginationInputSchema.extend({
 });
 
 export const adminRouter = router({
+  roster: adminProcedure.query(async ({ ctx }) => {
+    const { results } = await ctx.env.DB.prepare(
+      `SELECT m.id, m.display_name AS displayName, m.is_active AS isActive, COUNT(c.id) AS handCount
+       FROM manager m
+       LEFT JOIN season s ON s.league_id = m.league_id AND s.is_active = 1
+       LEFT JOIN card_copy c ON c.season_id = s.id AND c.current_manager_id = m.id AND c.location = 'HAND'
+       WHERE m.league_id = ? GROUP BY m.id ORDER BY m.display_name COLLATE NOCASE, m.id`
+    )
+      .bind(ctx.auth.manager.leagueId)
+      .all<{ id: string; displayName: string; isActive: number; handCount: number }>();
+    return { managers: results.map((row) => ({ ...row, isActive: row.isActive === 1 })) };
+  }),
+
   history: adminProcedure.input(adminHistoryInput).query(async ({ ctx, input }) => {
     const season = await getActiveSeason(ctx.env.DB, ctx.auth.manager.leagueId);
     if (!season) return { items: [], nextCursor: null };
@@ -76,18 +90,31 @@ export const adminRouter = router({
       });
     }
 
-    const alreadyReturned = await ctx.env.DB.prepare(
+    const returnedQuery = ctx.env.DB.prepare(
       `SELECT id FROM card_movement WHERE related_movement_id = ? AND movement_type = 'RETURNED' LIMIT 1`
-    )
-      .bind(original.id)
-      .first<{ id: string }>();
-    const [handRow, deckCopy] = await Promise.all([
-      ctx.env.DB.prepare(
+    ).bind(original.id);
+    const handQuery = ctx.env.DB.prepare(
         `SELECT COUNT(*) AS handCount FROM card_copy
          WHERE season_id = ? AND current_manager_id = ? AND location = 'HAND'`
-      )
-        .bind(season.id, original.managerId)
-        .first<{ handCount: number }>(),
+    ).bind(season.id, original.managerId);
+    const checkRecipient = async () => {
+      const [returned, handCount] = await Promise.all([
+        returnedQuery.first(),
+        handQuery.first<number>('handCount')
+      ]);
+      if (returned) {
+        throw new TRPCError({ code: 'CONFLICT', message: 'Esta jugada ya fue devuelta.' });
+      }
+      if (handCount !== null && handCount >= MAX_HAND_SIZE) {
+        const cause = new DomainRuleError('HAND_LIMIT_REACHED', `No se puede devolver la carta: el mánager ya tiene la mano llena (${MAX_HAND_SIZE} cartas).`);
+        throw new TRPCError({
+          code: 'CONFLICT', message: cause.message, cause
+        });
+      }
+      return handCount ?? 0;
+    };
+    const [handCount, deckCopy] = await Promise.all([
+      checkRecipient(),
       ctx.env.DB.prepare(
         `SELECT id, season_id AS seasonId, card_definition_id AS cardDefinitionId,
                 current_manager_id AS currentManagerId, location, created_at AS createdAt
@@ -135,10 +162,10 @@ export const adminRouter = router({
           notes: original.notes,
           createdAt: original.createdAt
         },
-        alreadyReturned: Boolean(alreadyReturned),
+        alreadyReturned: false,
         deckCardCopyToReturn: deckCopy,
         cardDefinition: { name: original.cardName },
-        recipientHandSize: handRow?.handCount ?? 0,
+        recipientHandSize: handCount,
         adminUserId: ctx.auth.user.id,
         newMovementId: movementId,
         newNotificationId: notificationId,
@@ -151,7 +178,7 @@ export const adminRouter = router({
           error.code === 'HAND_LIMIT_REACHED' || error.code === 'MOVEMENT_ALREADY_RETURNED'
             ? 'CONFLICT'
             : 'BAD_REQUEST';
-        throw new TRPCError({ code, message: error.message });
+        throw new TRPCError({ code, message: error.message, cause: error });
       }
       throw error;
     }
@@ -160,17 +187,14 @@ export const adminRouter = router({
     try {
       results = await ctx.env.DB.batch([
         ctx.env.DB.prepare(
-          `UPDATE card_copy SET location = 'HAND', current_manager_id = ?
-           WHERE id = ? AND season_id = ? AND location = 'DECK' AND current_manager_id IS NULL
-             AND (SELECT COUNT(*) FROM card_copy WHERE current_manager_id = ? AND season_id = ? AND location = 'HAND') < 3`
-        ).bind(original.managerId, deckCopy.id, season.id, original.managerId, season.id),
-        ctx.env.DB.prepare(
           `INSERT INTO card_movement
            (id, season_id, card_copy_id, manager_id, actor_user_id, movement_type, from_location,
             to_location, target_manager_id, target_label, whatsapp_message, distribution_batch_id,
             related_movement_id, notes, created_at)
            SELECT ?, ?, ?, ?, ?, 'RETURNED', 'DECK', 'HAND', NULL, NULL, NULL, NULL, ?, ?, ?
-           WHERE changes() = 1`
+           WHERE EXISTS (SELECT 1 FROM season WHERE id = ? AND league_id = ? AND is_active = 1)
+             AND EXISTS (SELECT 1 FROM card_copy WHERE id = ? AND season_id = ? AND location = 'DECK' AND current_manager_id IS NULL)
+             AND (SELECT COUNT(*) FROM card_copy WHERE current_manager_id = ? AND season_id = ? AND location = 'HAND') < ?`
         ).bind(
           movementId,
           season.id,
@@ -178,9 +202,20 @@ export const adminRouter = router({
           original.managerId,
           ctx.auth.user.id,
           original.id,
-          input.reason ?? null,
-          timestamp
+          result.movement.notes,
+          timestamp,
+          season.id,
+          ctx.auth.manager.leagueId,
+          deckCopy.id,
+          season.id,
+          original.managerId,
+          season.id,
+          MAX_HAND_SIZE
         ),
+        ctx.env.DB.prepare(
+          `UPDATE card_copy SET location = 'HAND', current_manager_id = ?
+           WHERE id = ? AND EXISTS (SELECT 1 FROM card_movement WHERE id = ?)`
+        ).bind(original.managerId, deckCopy.id, movementId),
         ctx.env.DB.prepare(
           `INSERT INTO notification
            (id, manager_id, notification_type, title, message, related_movement_id, is_read, read_at, created_at)
@@ -203,9 +238,10 @@ export const adminRouter = router({
       throw error;
     }
     if (changesOf(results[0]) !== 1 || changesOf(results[1]) !== 1) {
+      await checkRecipient();
       throw new TRPCError({
         code: 'CONFLICT',
-        message: 'La carta o la mano cambiaron; vuelve a intentarlo.'
+        message: 'La carta o la temporada han cambiado. Actualiza el historial antes de reintentar.'
       });
     }
     return {

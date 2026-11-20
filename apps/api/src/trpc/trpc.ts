@@ -1,7 +1,12 @@
 import { initTRPC, TRPCError } from '@trpc/server';
+import { DomainRuleError } from '@munchinking/domain';
 import type { TrpcContext } from './context';
 
-const t = initTRPC.context<TrpcContext>().create();
+const t = initTRPC.context<TrpcContext>().create({
+  errorFormatter({ shape, error }) {
+    return { ...shape, data: { ...shape.data, ...(error.cause instanceof DomainRuleError && { appCode: error.cause.code }) } };
+  }
+});
 
 export const router = t.router;
 export const publicProcedure = t.procedure.use(({ ctx, next }) => {

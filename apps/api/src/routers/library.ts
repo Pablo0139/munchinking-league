@@ -1,7 +1,10 @@
-import { cardRaritySchema, type CardRarity } from '@munchinking/shared';
+import type { CardDefinition } from '@munchinking/domain';
+import { cardRaritySchema } from '@munchinking/shared';
 import { z } from 'zod';
 import { getActiveSeason } from '../services/data';
 import { protectedProcedure, router } from '../trpc/trpc';
+
+type LibraryCard = Omit<CardDefinition, 'isEnabled'> & { isEnabled: number; seasonCopiesCount: number };
 
 export const libraryRouter = router({
   list: protectedProcedure
@@ -41,7 +44,7 @@ export const libraryRouter = router({
          ORDER BY CASE d.rarity WHEN 'LEGENDARY' THEN 1 WHEN 'EPIC' THEN 2 WHEN 'RARE' THEN 3 ELSE 4 END, d.name COLLATE NOCASE`
       )
         .bind(season?.id ?? '', ...bindings)
-        .all<Record<string, unknown> & { id: string; rarity: CardRarity }>();
+        .all<LibraryCard>();
       return { cards: result.results ?? [] };
     })
 });
