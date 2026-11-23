@@ -1,7 +1,7 @@
 import { beforeAll, expect, it } from 'vitest';
 import { useTestWorker } from './worker-fixture';
 
-const { database, rpc, ok, login } = useTestWorker();
+const { database, rpc, ok, login } = useTestWorker({ legacyCatalog: true });
 
 beforeAll(async () => {
   const db = await database();

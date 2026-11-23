@@ -4,6 +4,7 @@ import {
   check,
   index,
   integer,
+  primaryKey,
   sqliteTable,
   text,
   uniqueIndex
@@ -229,6 +230,25 @@ export const cardMovement = sqliteTable(
   ]
 );
 
+export const cardPlayEffect = sqliteTable('card_play_effect', {
+  movementId: text('movement_id').primaryKey().references(() => cardMovement.id, { onDelete: 'restrict' }),
+  choicesJson: text('choices_json', { mode: 'json' }).$type<Record<string, string>>().notNull(),
+  summary: text('summary').notNull(),
+  roundNumber: integer('round_number'),
+  mirrorSourceId: text('mirror_source_id').references(() => cardMovement.id, { onDelete: 'restrict' }),
+  effectiveSlug: text('effective_slug').notNull(),
+  effectiveChoicesJson: text('effective_choices_json', { mode: 'json' }).$type<Record<string, string>>().notNull()
+}, t => [index('idx_effect_mirror_source').on(t.mirrorSourceId).where(sql`${t.mirrorSourceId} IS NOT NULL`)]);
+
+export const musObligation = sqliteTable(
+  'mus_obligation',
+  {
+    movementId: text('movement_id').notNull().references(() => cardMovement.id, { onDelete: 'restrict' }),
+    managerId: text('manager_id').notNull().references(() => manager.id, { onDelete: 'restrict' })
+  },
+  (table) => [primaryKey({ columns: [table.managerId, table.movementId] })]
+);
+
 export const notification = sqliteTable(
   'notification',
   {
@@ -254,3 +274,18 @@ export const notification = sqliteTable(
     )
   ]
 );
+
+export const seasonRoundCalendar = sqliteTable('season_round_calendar', {
+  seasonId: text('season_id').notNull().references(() => season.id, { onDelete: 'restrict' }),
+  roundNumber: integer('round_number').notNull(),
+  firstStart: text('first_start').notNull(),
+  lastStart: text('last_start').notNull(),
+  endAt: text('end_at').notNull(),
+  endKind: text('end_kind', { enum: ['planned', 'actual'] }).notNull(),
+  revision: integer('revision').notNull().default(1)
+}, t => [
+  primaryKey({ columns: [t.seasonId, t.roundNumber] }),
+  check('positive_round', sql`${t.roundNumber} > 0`),
+  check('ordered_round', sql`${t.firstStart} <= ${t.lastStart} AND ${t.lastStart} < ${t.endAt}`),
+  check('known_end_kind', sql`${t.endKind} IN ('planned', 'actual')`)
+]);

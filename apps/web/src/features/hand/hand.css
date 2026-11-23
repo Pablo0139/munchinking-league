@@ -1,3 +1,4 @@
+.ml-hand-badge { width: min(22%, 2.5rem); height: auto; align-self: flex-start; object-fit: contain; }
 .ml-hand {
   container-type: inline-size;
   overflow: hidden;

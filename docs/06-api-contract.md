@@ -5,8 +5,10 @@
 | Proyecto             | Munchinking League   |
 | Documento            | Contrato de API      |
 | Archivo              | `06-api-contract.md` |
-| Versión              | 1.3                  |
-| Estado               | Implementado en local (ampliaciones de Fase 5) |
+| Versión              | 1.4                  |
+| Estado               | Contrato del código local T26/27; no certifica despliegue ni pruebas integradas |
+| correlation_id       | No suministrado |
+| Fuentes              | [Routers registrados](../apps/api/src/routers/index.ts), [esquemas compartidos](../packages/shared/src/schemas.ts), [router de cartas](../apps/api/src/routers/cards.ts) |
 | Última actualización | 20/11/2026           |
 
 ---
@@ -17,7 +19,7 @@
 
 Este documento define el contrato de comunicación entre el frontend y el backend de Munchinking League.
 
-La API se implementará mediante **tRPC**, por lo que los procedimientos estarán completamente tipados.
+El Worker sirve **tRPC** en `/trpc`; el cliente consume el tipo `AppRouter`.
 
 El frontend no accederá directamente a la base de datos.
 
@@ -41,18 +43,20 @@ La API seguirá los siguientes principios:
 
 Los procedimientos estarán agrupados en routers funcionales.
 
-La estructura será:
+La estructura registrada es:
 
+- `health` (`health.ping`, consulta pública; `/health` es una ruta HTTP separada)
 - `auth`
 - `manager`
 - `cards`
+- `calendar` (administrativo, **no** anidado en `admin`)
 - `history`
 - `notifications`
 - `distribution`
 - `library`
 - `admin`
 
-El router principal será `appRouter`.
+El router principal es `appRouter`.
 
 ---
 
@@ -149,7 +153,7 @@ Ninguna.
 - `teamName: string | null`
 - `avatarUrl: string | null`
 - `role: 'MANAGER' | 'ADMIN'`
-- `stats: { handCount: number; playedCount: number; discardedCount: number; returnedCount: number }`
+- `stats: { handCount: number; playedCount: number; discardedCount: number; returnedCount: number; maxHandSize: number }`
 
 ---
 
@@ -168,6 +172,7 @@ Ninguna.
 ### Respuesta
 
 - `cards: HandCardDto[]` (incluye `cardCopyId`, `obtainedAt`, `definition: CardDefinitionDto`)
+- `musDiscardRequired: boolean` (privado; sin temporada activa: `cards: []` y `false`)
 
 Solo devolverá cartas de la temporada activa cuya ubicación actual sea `HAND` y cuyo propietario sea el manager autenticado.
 
@@ -175,7 +180,7 @@ Solo devolverá cartas de la temporada activa cuya ubicación actual sea `HAND` 
 
 ## 5.3 manager.listTargets
 
-Obtiene la lista de managers activos de la liga para poblar el selector cuando se juega una carta con `targetType = 'MANAGER'`.
+Lista los mánagers activos de la liga para el selector histórico y los campos oficiales. Con `excludeSelf: false` incluye al actor, elegible en Cambio de Puntuación pero no como rival.
 
 ### Tipo
 
@@ -205,10 +210,12 @@ Juega una carta.
 
 ### Entrada
 
-- `cardCopyId: UUID`
-- `targetManagerId?: UUID` (obligatorio si `definition.targetType === 'MANAGER'`)
-- `targetLabel?: string` (obligatorio si `definition.targetType === 'PLAYER' | 'FREE_TEXT'`, máx. 120 caracteres)
-- `notes?: string` (opcional, máx. 240 caracteres)
+La copia (`cardCopyId: UUID`) determina la definición y el servidor distingue dos formatos por **slug**, no por un modo enviado por el cliente. El esquema común admite `notes` opcionales (máx. 240 caracteres).
+
+| Copia | Campos de juego |
+|---|---|
+| Oficial T26/27 | `choices: Record<string,string>` con las claves del [catálogo](../packages/shared/src/season-cards.ts) y `rulesConfirmed: true`. Enviar `{}` si no hay campos (p. ej., Mus). No combinar con `targetManagerId` ni `targetLabel`. |
+| Histórica | Omitir `choices` y `rulesConfirmed`. `MANAGER` exige `targetManagerId`; `PLAYER` y `FREE_TEXT` exigen `targetLabel` (máx. 120 caracteres); `NONE` no acepta objetivo. |
 
 ### Validaciones
 
@@ -219,18 +226,12 @@ El backend deberá comprobar:
 3. La CardCopy pertenece a la temporada activa.
 4. La CardCopy pertenece al manager autenticado.
 5. La CardCopy se encuentra en `HAND`.
-6. Los campos de objetivo coinciden exactamente con el `targetType` exigido por la `CardDefinition` (y `targetManagerId` pertenece a la misma `League`).
+6. La selección corresponde al formato de esa carta. En las oficiales comprueba claves y opciones, nombres distintos cuando hay varios jugadores, importes válidos y mánagers activos de la liga (sin repetir ni usar al actor como rival). No valida una escudería o una plantilla por el mero hecho de seleccionar un mánager.
+7. El servidor evalúa la ventana de calendario cuando procede y resuelve las tiradas y los cálculos; no acepta resultados de dados del cliente. El bloqueo Mus, las protecciones locales aplicables y la vigencia del origen de Espejo se comprueban en la escritura.
 
 ### Operación
 
-La operación realizará atómicamente mediante `db.batch` con condición optimista:
-
-1. Obtener la CardCopy y su CardDefinition.
-2. Validar propiedad y requisitos de objetivo.
-3. Renderizar el mensaje oficial de WhatsApp a partir de `whatsapp_template`.
-4. Cambiar `location` a `DECK` y establecer `current_manager_id` a `NULL` (`WHERE id = cardCopyId AND location = 'HAND' AND current_manager_id = managerId`).
-5. Crear un `CardMovement` (`PLAYED`, `from_location = 'HAND'`, `to_location = 'DECK'`) almacenando `target_manager_id`, `target_label` y `whatsapp_message`.
-6. Devolver el resultado.
+Tras leer la copia y resolver la jugada, un único `db.batch` mueve `HAND → DECK`, quita el propietario y encadena el movimiento `PLAYED` al éxito del cambio. Registra el mensaje completo, tramita obligaciones Mus y, en oficiales, persiste en `card_play_effect` elecciones originales y efectivas, resumen, slug efectivo, jornada si se pudo asociar y origen si es réplica. El detalle de efecto **no** es un objeto adicional de la respuesta.
 
 ### Respuesta
 
@@ -258,7 +259,7 @@ Descarta una carta.
 
 ### Validaciones
 
-Las mismas que para `cards.play`.
+Exige copia propia en mano de la temporada activa, no objetivos ni confirmación reglamentaria. Con Mus pendiente solo admite la rareza máxima de la mano actual; los empates son válidos.
 
 ### Operación
 
@@ -274,7 +275,13 @@ La operación realizará:
 - `card: CardCopy`
 - `movement: CardMovement`
 
-La carta vuelve inmediatamente al mazo.
+La carta vuelve inmediatamente al mazo. El movimiento `DISCARDED` satisface en el mismo lote las obligaciones Mus pendientes de ese mánager y temporada. No genera mensaje de jugada ni liquida compensación.
+
+## 6.3 cards.mirrorTargets
+
+`query` autenticada **sin entrada** → `{ items: Array<{ id, cardName, managerName, createdAt, targetLabel, requiresPlayer }> }`. `id` identifica el movimiento, no la copia; `targetLabel` puede ser nulo. Sin temporada activa devuelve `{ items: [] }`. No es el historial público: solo incluye efectos adversos admitidos dirigidos al mánager autenticado, de un emisor activo distinto, sin devolución ni réplica vigente suya para ese origen.
+
+Para jugar Espejo: `choices: { movement: id }`; añadir `reflectedPlayer` si `requiresPlayer` es verdadero. El servidor impone como destino al emisor original, revalida el origen en la escritura y evalúa las protecciones sobre el efecto replicado. No se elige un tercer equipo, no se refleja Cambio de Puntuación y no se anula la primera jugada. La pertenencia del futbolista y la inmediatez reglamentaria requieren confirmación externa.
 
 ---
 
@@ -635,6 +642,15 @@ Envía un aviso administrativo interno a un manager específico o a todos los ma
 
 # 12. Autorización
 
+### Calendario opcional: router `calendar` (solo `ADMIN`)
+
+| Procedimiento | Entrada | Respuesta y condiciones |
+|---|---|---|
+| `calendar.list` · query | Ninguna | `{ seasonId, zone, rounds }`; sin temporada activa: ID nulo y lista vacía. Cada jornada incluye `roundNumber`, `firstStart`, `lastStart`, `endAt`, `endKind`, `revision`. Salida temporal en UTC ISO. |
+| `calendar.save` · mutation | `{ seasonId, roundNumber, expectedRevision, firstStart, lastStart, endAt, endKind }` | `{ revision }`. Temporada activa de la liga del administrador. Revisión 0 crea; revisión positiva actualiza solo si coincide. Duplicado, temporada ajena/inactiva o revisión obsoleta: `CONFLICT`. |
+
+Entradas temporales en minutos civiles de `Europe/Madrid`; una hora inexistente se rechaza y una repetida exige desfase explícito. Primer inicio ≤ último inicio < fin; `endKind` es `planned` o `actual`, y un fin futuro no puede ser `actual`. No hay importación, precarga ni borrado. [Ruta](../apps/api/src/routers/calendar.ts) y [ventanas por carta](calendario-oficial.md).
+
 La autorización se comprobará siempre en el backend.
 
 ## 12.1 Roles
@@ -679,6 +695,7 @@ Los principales errores funcionales serán:
 - `NOT_FOUND`
 - `BAD_REQUEST`
 - `CONFLICT`
+- `PRECONDITION_FAILED` (p. ej., sin temporada activa al jugar, ventana cerrada o descarte exigido por Mus)
 - `INTERNAL_SERVER_ERROR`
 
 ## 13.1 UNAUTHORIZED
@@ -757,7 +774,7 @@ La API no enviará el mensaje a WhatsApp.
 
 El frontend mostrará el resultado y permitirá copiarlo al portapapeles.
 
-La validación de si la carta se ha jugado correctamente se realizará externamente mediante WhatsApp.
+El mensaje es el del movimiento aceptado; copiarlo no lo valida de nuevo. El comisionado comprueba los hechos externos y aplica los ajustes reales.
 
 La API no tendrá ningún estado de validación o aprobación de cartas jugadas.
 
@@ -769,11 +786,7 @@ La API del MVP no dependerá de Biwenger.
 
 No existirán procedimientos específicos de Biwenger en esta versión.
 
-La aplicación no utilizará el calendario de partidos para determinar si una carta puede jugarse.
-
-La validación de las condiciones particulares de cada carta se realizará externamente durante el MVP.
-
-Una futura integración con Biwenger podrá añadirse sin modificar el contrato básico de las operaciones de cartas.
+En `cards.play` una ventana local cerrada rechaza la jugada; abierta acredita solo el horario; indeterminada mantiene la confirmación externa. Un fin previsto no prueba la finalización. Los nombres, importes y confirmaciones no autentican plantillas, precios, partidos individuales, minutos ni puntos. No hay escritura de saldos, alineaciones o mercado en Biwenger. Véase la [matriz de responsabilidades](09-card-catalog-and-templates.md).
 
 ---
 
@@ -785,3 +798,4 @@ Una futura integración con Biwenger podrá añadirse sin modificar el contrato 
 | 1.1     | Se añaden parámetros de objetivo en `cards.play`, estadísticas de perfil en `manager.getProfile`, `manager.listTargets`, búsqueda y copias de temporada en `library.list`, `notifications.markAllAsRead`, `distribution.status`, devolución determinista por `movementId` en `admin.returnCard` y `admin.sendNotice`. |
 | 1.2     | Se documentan `isReturned` y el filtro `activeOnly` del historial público, el detalle de carta del reparto personal y la lectura idempotente de avisos. |
 | 1.3     | Se precisa el contrato administrativo de plantilla, devolución y reparto semanal según los routers locales de Fase 5. |
+| 1.4     | Se distinguen jugada oficial e histórica, consulta dirigida de Espejo, obligación Mus, protecciones y calendario administrativo opcional. |

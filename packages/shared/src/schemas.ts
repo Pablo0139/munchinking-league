@@ -34,6 +34,9 @@ export const playCardInputSchema = z.object({
   cardCopyId: uuidSchema,
   targetManagerId: uuidSchema.optional(),
   targetLabel: z.string().trim().min(1).max(MAX_TARGET_LABEL_LENGTH).optional(),
+  choices: z.record(z.string().min(1).max(40), z.string().min(1).max(MAX_TARGET_LABEL_LENGTH))
+    .refine(fields => Object.keys(fields).length <= 12, 'Demasiadas selecciones.').optional(),
+  rulesConfirmed: z.boolean().optional(),
   notes: z.string().trim().min(1).max(MAX_MOVEMENT_NOTES_LENGTH).optional()
 });
 
@@ -60,7 +63,7 @@ export const sendAdminNoticeInputSchema = z.object({
 export const cardDefinitionSeedSchema = z.object({
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   name: z.string().trim().min(2).max(80),
-  nickname: z.string().trim().min(2).max(120),
+  nickname: z.string().trim().max(120),
   rarity: cardRaritySchema,
   targetType: targetTypeSchema,
   defaultCopies: z.number().int().min(1).max(20),

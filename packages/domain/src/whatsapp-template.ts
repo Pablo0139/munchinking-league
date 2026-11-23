@@ -145,7 +145,7 @@ export function renderWhatsappMessage(params: RenderWhatsappMessageParams): stri
   const lines: string[] = [
     '🃏 *MUNCHINKING LEAGUE — CARTA JUGADA*',
     `👤 *Manager:* ${managerName}`,
-    `✨ *Carta:* ${cardName} _${cardNickname}_ (${rarityLabel})`
+    `✨ *Carta:* ${cardName}${cardNickname ? ` _${cardNickname}_` : ''} (${rarityLabel})`
   ];
 
   if (params.definition.targetType !== 'NONE' && targetText.length > 0) {

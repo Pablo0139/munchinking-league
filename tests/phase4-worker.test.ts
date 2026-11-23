@@ -1,8 +1,8 @@
 import { beforeAll, expect, it } from 'vitest';
-import { INITIAL_CARD_CATALOG_SEED as catalog } from '../db/seed/cards.seed';
+import { LEGACY_TEST_CATALOG as catalog } from './fixtures/legacy-catalog';
 import { useTestWorker } from './worker-fixture';
 
-const { database, login, ok, rpc } = useTestWorker();
+const { database, login, ok, rpc } = useTestWorker({ legacyCatalog: true });
 const stamp = '2026-11-18T12:00:00.000Z';
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const presi = catalog.find(card => card.slug === 'presi-culo')!;

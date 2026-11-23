@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { trpcClient } from '../../lib/trpc';
 import { PanelError, ScreenHeading, tableKey } from '../table/shared';
 import { Audit } from './Audit';
+import { OfficialCalendar } from './OfficialCalendar';
 import { SendNotice } from './SendNotice';
 import { WeeklyDistribution } from './WeeklyDistribution';
 import './admin.css';
@@ -18,6 +19,7 @@ export function Admin({ managerId }: { managerId: string }) {
     </ScreenHeading>
     <nav className="ml-admin-jumps" aria-label="Secciones de administración">
       <a href="#auditoria">Auditoría</a><a href="#reparto">Reparto</a><a href="#comunicados">Avisos</a>
+      <a href="#calendario">Calendario</a>
     </nav>
     {roster.isError && <PanelError retry={() => void roster.refetch()} />}
     <div className="ml-admin-board">
@@ -25,6 +27,7 @@ export function Admin({ managerId }: { managerId: string }) {
       <div className="ml-admin-side">
         <div id="reparto"><WeeklyDistribution managerId={managerId} /></div>
         <div id="comunicados"><SendNotice managerId={managerId} roster={managers} /></div>
+        <div id="calendario"><OfficialCalendar managerId={managerId} /></div>
       </div>
     </div>
   </div>;

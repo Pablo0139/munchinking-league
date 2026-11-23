@@ -38,7 +38,7 @@ export const libraryRouter = router({
                 d.is_enabled AS isEnabled, d.created_at AS createdAt,
                 COUNT(c.id) AS seasonCopiesCount
          FROM card_definition d
-         LEFT JOIN card_copy c ON c.card_definition_id = d.id AND c.season_id = ?
+         JOIN card_copy c ON c.card_definition_id = d.id AND c.season_id = ?
          WHERE ${clauses.join(' AND ')}
          GROUP BY d.id
          ORDER BY CASE d.rarity WHEN 'LEGENDARY' THEN 1 WHEN 'EPIC' THEN 2 WHEN 'RARE' THEN 3 ELSE 4 END, d.name COLLATE NOCASE`

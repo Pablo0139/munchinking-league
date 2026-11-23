@@ -31,6 +31,11 @@
   color: #1b1429; background: #fff;
 }
 .ml-focus textarea { resize: vertical; }
+.ml-official-fields { min-inline-size: 0; margin: 1rem 0; padding: 0; border: 0; }
+.ml-official-fields legend { font-weight: 700; }
+.ml-focus .ml-official-check { display: flex; align-items: center; gap: .75rem; min-height: 44px; cursor: pointer; }
+.ml-focus .ml-official-check input { flex: none; width: 1.3rem; height: 1.3rem; min-height: 0; padding: 0; margin: 0; accent-color: #6d28d9; }
+.ml-focus__notice { padding: .75rem; background: #f4effb; border-radius: .6rem; }
 .ml-focus__actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
 .ml-focus__actions button { flex: 1 1 auto; }
 .ml-focus button {

@@ -77,6 +77,10 @@ Para trabajar en local, desde la raíz y con Node 22+ y Corepack: instalar (`cor
 
 **Si ya tienes datos locales**, ejecuta `corepack pnpm db:migrate:local` desde la raíz en lugar de `db:setup:local`. Aplica las migraciones pendientes sin volver a sembrar D1. En cada entorno, la migración `0001` debe aplicarse **antes** de arrancar o desplegar el nuevo Worker.
 
+**Catálogo T26/27.** En una D1 dev existente y migrada, ejecuta `corepack pnpm db:catalog:local` desde la raíz. Para generar y revisar el SQL sin aplicarlo, usa `corepack pnpm db:catalog:sql`. El actualizador reconoce los IDs de la liga y temporada del seed dev; si no existen, no carga nada. No crea cuentas, no cambia credenciales ni resiembra manos. En una D1 local **nueva**, `corepack pnpm db:setup:local` carga directamente las 33 definiciones oficiales y ninguna demo.
+
+La dotación operativa es de 3 copias por común, 2 por rara y 1 por épica: 71 copias para las 33 cartas. Los IDs estables permiten repetir la carga sin duplicar ni recuperar cartas en mano. Se retiran globalmente solo las 13 definiciones originales de demostración (por ID y slug), sin borrar sus copias, movimientos ni avisos. Las demos que estén en mano se pueden jugar o descartar; al volver al mazo no se reparten. La biblioteca solo muestra cartas habilitadas con copias en la temporada activa.
+
 **Fase 5 verificada en local (20/11/2026).** Con una sesión `ADMIN`, abre `/admin` para filtrar el historial, devolver cartas, enviar avisos y consultar o confirmar el reparto semanal. Las 28 pruebas pasan, incluidas las de concurrencia y doble reparto pendientes de Fase 2. No hubo commit, push ni despliegue de Fase 5.
 
 En staging está confirmado el horario del cron, no un reparto real: no hay temporada activa ni lotes `CRON`. La [bitácora de Fase 5](../Documentacion/bitacoras/2026-11-20-fase5-administracion-reparto.md) separa las pruebas locales de las consultas remotas. La Fase 6 (catálogo, QA en dispositivos físicos y producción) no está autorizada. Véase la [hoja de ruta](./docs/10-roadmap-and-execution-plan.md).

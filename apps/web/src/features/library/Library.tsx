@@ -1,4 +1,4 @@
-import { CARD_RARITIES, RARITY_LABELS_ES, type CardRarity } from '@munchinking/shared';
+import { CARD_RARITIES, findSeasonCard, RARITY_LABELS_ES, type CardRarity } from '@munchinking/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { trpcClient } from '../../lib/trpc';
@@ -19,8 +19,11 @@ export function Library({ managerId }: { managerId: string }) {
     queryFn: ({ signal }) => trpcClient.library.list.query(undefined, { signal }),
   });
   const term = searchable(search.trim());
-  const entries = catalog.data?.cards.filter(card => (!rarity || card.rarity === rarity) &&
-    (!term || [card.name, card.nickname].some(label => searchable(label).includes(term))));
+  const entries = catalog.data?.cards.filter(card => {
+    const face = findSeasonCard(card.slug) ?? card;
+    return (!rarity || card.rarity === rarity) && (!term || [face.name, face.nickname].some(label => searchable(label).includes(term)));
+  });
+  const official = selected && findSeasonCard(selected.slug);
 
   return <div className="ml-page">
     <ScreenHeading kicker="Catálogo de temporada" title="Biblioteca">
@@ -54,8 +57,9 @@ export function Library({ managerId }: { managerId: string }) {
     {selected && <DetailDialog kicker="Biblioteca" title={selected.name} onClose={() => setSelected(null)}>
       <div className="ml-focus__card"><Card definition={selected} /></div>
       <p className="ml-copies">{copies(selected.seasonCopiesCount)}</p>
-      <h3>Efecto</h3><p>{selected.description}</p>
-      <h3>Reglas de uso</h3><p className="ml-focus__rules">{selected.usageRules}</p>
+      <h3>Efecto</h3><p>{official?.description ?? selected.description}</p>
+      {!!official?.fields.length && <><h3>Selección de la jugada</h3><ul>{official.fields.map(f => <li key={f.key}>{f.label}{f.options && `: ${f.options.join(' / ')}`}</li>)}</ul></>}
+      <h3>Reglas de uso</h3><p className="ml-focus__rules">{official?.usageRules ?? selected.usageRules}</p>
     </DetailDialog>}
   </div>;
 }

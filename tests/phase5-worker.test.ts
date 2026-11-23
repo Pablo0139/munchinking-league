@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, expect, it } from 'vitest';
 import { computeIsoWeekKey } from '../packages/domain/src';
 import { useTestWorker } from './worker-fixture';
 
-const { database, login, rpc, ok, scheduled } = useTestWorker();
+const { database, login, rpc, ok, scheduled } = useTestWorker({ legacyCatalog: true });
 let admin: string, actor: string, rival: string, managerId: string, rivalId: string, adminId: string;
 const stmt = async (sql: string, ...args: (string | number)[]) => {
   const query = (await database()).prepare(sql);

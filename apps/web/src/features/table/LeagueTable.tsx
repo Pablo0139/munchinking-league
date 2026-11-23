@@ -140,7 +140,15 @@ export function Home({ session }: { session: Session }) {
           {hand.isError ? (
             <PanelError retry={() => void hand.refetch()} />
           ) : hand.data ? (
-            <CardFan cards={hand.data.cards} onSelect={setFocused} />
+            <>
+              {hand.data.musDiscardRequired && (
+                <p className="ml-panel-note" role="status">
+                  Mus: antes de jugar, descarta una de tus cartas de mayor rareza.
+                  Si hay empate, tú eliges cuál.
+                </p>
+              )}
+              <CardFan cards={hand.data.cards} onSelect={setFocused} />
+            </>
           ) : (
             <p className="ml-panel-note" role="status">
               Preparando tu mano…
@@ -152,6 +160,7 @@ export function Home({ session }: { session: Session }) {
       {focused && (
         <CardFocusSheet
           card={focused}
+          actorId={session.manager.id}
           onClose={() => setFocused(null)}
           onChanged={() => {
             void client.invalidateQueries({ queryKey: tableKey(session.manager.id) });

@@ -2,6 +2,7 @@ import { MAX_HAND_SIZE } from '@munchinking/shared';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { getActiveSeason } from '../services/data';
+import { musStatusStatement } from '../services/mus';
 import { protectedProcedure, router } from '../trpc/trpc';
 
 export const managerRouter = router({
@@ -47,8 +48,8 @@ export const managerRouter = router({
 
   getHand: protectedProcedure.query(async ({ ctx }) => {
     const season = await getActiveSeason(ctx.env.DB, ctx.auth.manager.leagueId);
-    if (!season) return { cards: [] };
-    const result = await ctx.env.DB.prepare(
+    if (!season) return { cards: [], musDiscardRequired: false };
+    const handQuery = ctx.env.DB.prepare(
       `SELECT c.id AS cardCopyId, c.created_at AS obtainedAt,
               d.id AS definitionId, d.slug, d.name, d.nickname, d.description,
               d.usage_rules AS usageRules, d.rarity, d.target_type AS targetType,
@@ -57,8 +58,11 @@ export const managerRouter = router({
        WHERE c.season_id = ? AND c.current_manager_id = ? AND c.location = 'HAND'
        ORDER BY c.created_at DESC, c.id DESC`
     )
-      .bind(season.id, ctx.auth.manager.id)
-      .all<{
+      .bind(season.id, ctx.auth.manager.id);
+    const [hand, status] = await ctx.env.DB.batch([
+      handQuery, musStatusStatement(ctx.env.DB, ctx.auth.manager.id, season.id)
+    ]);
+    const rows = hand!.results as Array<{
         cardCopyId: string;
         obtainedAt: string;
         definitionId: string;
@@ -71,9 +75,10 @@ export const managerRouter = router({
         targetType: string;
         imageUrl: string;
         whatsappTemplate: string;
-      }>();
+      }>;
     return {
-      cards: (result.results ?? []).map((row) => ({
+      musDiscardRequired: (status!.results[0] as { required: number }).required === 1,
+      cards: rows.map((row) => ({
         cardCopyId: row.cardCopyId,
         obtainedAt: row.obtainedAt,
         definition: {

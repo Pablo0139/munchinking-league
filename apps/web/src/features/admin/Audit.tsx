@@ -122,6 +122,7 @@ export function Audit({ managerId, roster }: { managerId: string; roster: AdminR
           <details className="ml-admin-meta">
             <summary>Trazabilidad</summary>
             <p>Movimiento: {row.id}</p>
+            {row.whatsappMessage && <p style={{whiteSpace:'pre-line'}}>{row.whatsappMessage}</p>}
             {row.actorUserId && <p>Actor: {row.actorUserId}</p>}
             {row.relatedMovementId && <p>Movimiento de referencia: {row.relatedMovementId}</p>}
             {row.distributionBatchId && <p>Lote de reparto: {row.distributionBatchId}</p>}

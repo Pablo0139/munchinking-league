@@ -51,7 +51,8 @@ export const distributionRouter = router({
       ctx.env.DB.prepare(
         `SELECT
            (SELECT COUNT(*) FROM distribution_batch WHERE season_id = ? AND week_key = ?) AS weekBatchCount,
-           (SELECT COUNT(*) FROM card_copy WHERE season_id = ? AND location = 'DECK' AND current_manager_id IS NULL) AS availableDeckCopies,
+           (SELECT COUNT(*) FROM card_copy WHERE season_id = ? AND location = 'DECK' AND current_manager_id IS NULL
+             AND card_definition_id IN (SELECT id FROM card_definition WHERE is_enabled = 1)) AS availableDeckCopies,
            (SELECT COUNT(*) FROM manager m WHERE m.league_id = ? AND m.is_active = 1 AND
              (SELECT COUNT(*) FROM card_copy c WHERE c.current_manager_id = m.id AND c.season_id = ? AND c.location = 'HAND') < 3) AS eligibleManagersCount`
       )

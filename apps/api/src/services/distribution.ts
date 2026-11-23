@@ -83,7 +83,8 @@ export async function executeDistribution(params: {
       .prepare(
         `SELECT id, season_id AS seasonId, card_definition_id AS cardDefinitionId,
                 current_manager_id AS currentManagerId, location, created_at AS createdAt
-         FROM card_copy WHERE season_id = ? AND location = 'DECK' AND current_manager_id IS NULL`
+         FROM card_copy WHERE season_id = ? AND location = 'DECK' AND current_manager_id IS NULL
+           AND card_definition_id IN (SELECT id FROM card_definition WHERE is_enabled = 1)`
       )
       .bind(activeSeason.id)
       .all<CardCopy>()
@@ -115,13 +116,17 @@ export async function executeDistribution(params: {
         `INSERT INTO distribution_batch
          (id, season_id, week_key, trigger_source, triggered_by_user_id, distributed_count,
           skipped_full_hand_count, skipped_full_hand_managers, created_at)
-         SELECT ?, ?, ?, ?, ?, 0, COUNT(*), json_group_array(json_object('id', id, 'displayName', display_name)), ?
+         SELECT ?, ?, ?, ?, ?, 0, full_hands.cnt, full_hands.managers_json, ?
          FROM (
-           SELECT m.id, m.display_name FROM manager m
-           JOIN card_copy c ON c.current_manager_id = m.id AND c.season_id = ? AND c.location = 'HAND'
-           WHERE m.league_id = ? AND m.is_active = 1
-           GROUP BY m.id HAVING COUNT(*) >= ? ORDER BY m.id
-         )
+           SELECT COUNT(*) AS cnt,
+                  json_group_array(json_object('id', id, 'displayName', display_name)) AS managers_json
+           FROM (
+             SELECT m.id, m.display_name FROM manager m
+             JOIN card_copy c ON c.current_manager_id = m.id AND c.season_id = ? AND c.location = 'HAND'
+             WHERE m.league_id = ? AND m.is_active = 1
+             GROUP BY m.id HAVING COUNT(*) >= ? ORDER BY m.id
+           )
+         ) AS full_hands
          WHERE (? = 1 OR NOT EXISTS (
            SELECT 1 FROM distribution_batch WHERE season_id = ? AND week_key = ?
          ))
@@ -156,6 +161,7 @@ export async function executeDistribution(params: {
         .prepare(
           `UPDATE card_copy SET location = 'HAND', current_manager_id = ?
            WHERE id = ? AND season_id = ? AND location = 'DECK' AND current_manager_id IS NULL
+             AND card_definition_id IN (SELECT id FROM card_definition WHERE is_enabled = 1)
              AND EXISTS (SELECT 1 FROM distribution_batch WHERE id = ?)
              AND (SELECT COUNT(*) FROM card_copy WHERE current_manager_id = ? AND season_id = ? AND location = 'HAND') < 3`
         )

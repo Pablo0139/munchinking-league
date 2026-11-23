@@ -4,13 +4,14 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, expect } from 'vitest';
 import { unstable_splitSqlQuery as splitSql } from 'wrangler';
 import { buildDevSeedSql } from '../db/seed/dev.seed';
+import { LEGACY_TEST_CATALOG } from './fixtures/legacy-catalog';
 
 // Resolve Wrangler's own build/runtime tools, including under pnpm's strict layout.
 const requireWrangler = createRequire(createRequire(import.meta.url).resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = requireWrangler('miniflare');
 const { build } = requireWrangler('esbuild');
 
-export function useTestWorker() {
+export function useTestWorker({ legacyCatalog = false } = {}) {
   let runtime: InstanceType<typeof Miniflare>;
   const database = () => runtime.getD1Database('DB');
 
@@ -26,7 +27,7 @@ export function useTestWorker() {
     const db = await database();
     const dir = new URL('../db/migrations/', import.meta.url);
     const migrations = readdirSync(dir).filter(name => name.endsWith('.sql')).sort();
-    for (const sql of [...migrations.map(name => readFileSync(new URL(name, dir), 'utf8')), buildDevSeedSql().sql]) {
+    for (const sql of [...migrations.map(name => readFileSync(new URL(name, dir), 'utf8')), buildDevSeedSql(legacyCatalog ? LEGACY_TEST_CATALOG : undefined).sql]) {
       await db.batch(splitSql(sql).map(statement => db.prepare(statement)));
     }
   }, 30_000);

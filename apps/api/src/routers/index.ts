@@ -3,6 +3,7 @@ import { publicProcedure, router } from '../trpc/trpc';
 import { authRouter } from './auth';
 import { adminRouter } from './admin';
 import { cardsRouter } from './cards';
+import { calendarRouter } from './calendar';
 import { distributionRouter } from './distribution';
 import { historyRouter } from './history';
 import { libraryRouter } from './library';
@@ -22,6 +23,7 @@ export const appRouter = router({
   auth: authRouter,
   manager: managerRouter,
   cards: cardsRouter,
+  calendar: calendarRouter,
   history: historyRouter,
   library: libraryRouter,
   notifications: notificationsRouter,

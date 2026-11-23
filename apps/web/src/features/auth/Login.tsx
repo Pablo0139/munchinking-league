@@ -41,9 +41,15 @@ export function Login() {
     <main className="ml-login">
       <div className="ml-login__poster" aria-hidden="true">
         <div className="ml-poster-lines" />
-        <div className="ml-poster-emblem">
-          <img src="/icons/league-192.png" alt="" />
-        </div>
+        <img
+          className="ml-poster-emblem"
+          src="/icons/league-192.png"
+          srcSet="/icons/league-192.png 192w, /icons/league-512.png 512w"
+          sizes="(min-width: 48rem) 8rem, 6rem"
+          width="128"
+          height="128"
+          alt=""
+        />
         <span>MUNCHINKING LEAGUE</span>
       </div>
       <section className="ml-login__form">

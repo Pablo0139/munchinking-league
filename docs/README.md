@@ -9,8 +9,8 @@
 | Campo                | Valor                                                |
 | -------------------- | ---------------------------------------------------- |
 | Proyecto             | Munchinking League                                   |
-| Versión documental   | 1.3                                                  |
-| Estado               | Fase 5 verificada en local, sin desplegar            |
+| Versión documental   | 1.4                                                  |
+| Estado               | Catálogo y API contrastados con el código local T26/27; sin certificación de despliegue |
 | Última actualización | 20/11/2026                                           |
 
 ---
@@ -27,15 +27,17 @@ Todos los documentos siguen una única línea técnica coherente (**Monorepo Typ
 | 03    | [`03-architecture.md`](./03-architecture.md)                             | Arquitectura por capas, seguridad de sesiones en Workers, atomicidad en D1 y Cron semanal.                                             | APPROVED v1.1 |
 | 04    | [`04-domain-model.md`](./04-domain-model.md)                             | Entidades, agregados, invariantes, eventos y ciclo de vida de las cartas.                                                              | APPROVED v1.1 |
 | 05    | [`05-data-model.md`](./05-data-model.md)                                 | Esquema D1 y registro de mánagers excluidos por mano llena en cada lote semanal. | v1.3 · ampliación local |
-| 06    | [`06-api-contract.md`](./06-api-contract.md)                             | Contrato tRPC, incluida la consulta de plantilla, la devolución y el estado y ejecución del reparto. | v1.3 · ampliación local |
+| 06    | [`06-api-contract.md`](./06-api-contract.md)                             | Contrato tRPC: jugadas oficiales e históricas, Espejo, mano y Mus, calendario, administración y reparto. | v1.4 |
 | 07    | [`07-project-structure.md`](./07-project-structure.md)                   | Estructura física del monorepo (`apps/web`, `apps/api`, `packages/domain`, `packages/shared`, `packages/config`, `db/`).               | APPROVED v1.1 |
 | 08    | [`08-design-system.md`](./08-design-system.md)                           | Paleta morada oficial, tipografía, anatomía 5:7 de cartas, rarezas accesibles (forma + color), abanico y PWA.                          | APPROVED v1.0 |
-| 09    | [`09-card-catalog-and-templates.md`](./09-card-catalog-and-templates.md) | Motor determinista de plantillas de WhatsApp, dimensionamiento del mazo y catálogo semilla inicial.                                    | APPROVED v1.0 |
+| 09    | [`09-card-catalog-and-templates.md`](./09-card-catalog-and-templates.md) | Matriz de las 33 cartas del PDF por página física, decisiones del servidor y del comisionado, mensaje al grupo y activación local sin reiniciar la liga. | v2.0 |
 | 10    | [`10-roadmap-and-execution-plan.md`](./10-roadmap-and-execution-plan.md) | Dimensionamiento Cloudflare Free Tier, checklist de infraestructura (Fase 0) y plan de desarrollo por fases (Fases 1–6).               | APPROVED v1.0 |
 
 ---
 
 ## Orden de lectura recomendado
+
+**Para resolver una jugada:** empezar por la [matriz T26/27](09-card-catalog-and-templates.md). Para un rechazo por horario, escudo o descarte obligatorio, consultar respectivamente [calendario](calendario-oficial.md), [protecciones](protecciones-locales.md) o [Mus](mus-local.md). Los formatos que envía y recibe la interfaz están en el [contrato de API](06-api-contract.md).
 
 Para operar el panel `/admin`, consulta el [README del proyecto](../README.md). La [bitácora del 20/11/2026](../../Documentacion/bitacoras/2026-11-20-fase5-administracion-reparto.md) recoge las pruebas y qué se comprobó en staging sin ejecutar un reparto.
 

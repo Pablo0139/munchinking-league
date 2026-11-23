@@ -2,6 +2,7 @@
   "extends": "../config/tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "lib": ["ES2023", "WebWorker"],
     "noEmit": true
   },
   "include": ["src/**/*.ts"]

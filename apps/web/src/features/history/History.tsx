@@ -90,6 +90,9 @@ export function History({ managerId }: { managerId: string }) {
                     {row.isReturned && <span className="ml-pill ml-pill--returned">Devuelta</span>}
                     <p className="ml-muted">{row.managerName} · <Stamp iso={row.createdAt} /></p>
                     {(row.targetManagerName || row.targetLabel) && <p>Objetivo: {row.targetManagerName || row.targetLabel}</p>}
+                    {row.movementType === 'PLAYED' && row.whatsappMessage && <details><summary>Ver jugada y resultado</summary>
+                      <p style={{whiteSpace:'pre-line'}}>{row.whatsappMessage}</p>
+                    </details>}
                   </li>
                 ))}
               </ol>

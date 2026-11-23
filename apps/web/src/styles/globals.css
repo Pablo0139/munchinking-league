@@ -33,8 +33,7 @@ button, a, input, select, summary { -webkit-tap-highlight-color: transparent; }
 .ml-login__poster>span { font-size: .7rem; font-weight: 800; letter-spacing: .23em; }
 .ml-poster-lines { position: absolute; z-index: -1; inset: .85rem; border: 1px solid #ffffff50; border-radius: .75rem; background: linear-gradient(90deg,transparent 49.9%,#ffffff40 50%,transparent 50.2%); }
 .ml-poster-lines::after { content: ''; position: absolute; inset: 50% auto auto 50%; width: 65%; aspect-ratio: 1; border-radius: 50%; border: 1px solid #ffffff50; transform: translate(-50%,-50%); }
-.ml-poster-emblem { width: 4.25rem; aspect-ratio: 5/7; display: grid; place-items: center; background: #351468; border: 2px solid #dec8ff; border-radius: .6rem; box-shadow: -7px 3px #8f6bb4, -10px 5px #34105e, 3px 6px 12px #23104360; transform: rotate(7deg); }
-.ml-poster-emblem img { width: 72%; }
+.ml-poster-emblem { width: 6rem; height: auto; border-radius: .75rem; }
 .ml-login__form { border: 1px solid var(--border-subtle); background: white; border-radius: 0 0 1.5rem 1.5rem; padding: clamp(1.3rem,5vw,3rem); }
 .ml-login__form h1,.ml-intro h1 { font-size: clamp(1.9rem,5vw,2.9rem); font-weight: 820; line-height: 1.12; letter-spacing: -.055em; margin: .4rem 0; }
 .ml-login__form form { display: grid; gap: .9rem; margin: 1.5rem 0 1rem; }

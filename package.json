@@ -19,6 +19,8 @@
     "test:watch": "vitest",
     "db:generate": "corepack pnpm --filter @munchinking/db generate",
     "db:migrate:local": "wrangler d1 migrations apply munchinking-db --local",
+    "db:catalog:sql": "tsx db/seed/upgrade-catalog.ts",
+    "db:catalog:local": "corepack pnpm db:catalog:sql && wrangler d1 execute munchinking-db --local --file=db/.generated/catalog-t26-27.sql",
     "db:seed:local": "corepack pnpm --filter @munchinking/db seed:sql && wrangler d1 execute munchinking-db --local --file=db/.generated/dev.seed.sql",
     "db:setup:local": "corepack pnpm db:migrate:local && corepack pnpm db:seed:local"
   },

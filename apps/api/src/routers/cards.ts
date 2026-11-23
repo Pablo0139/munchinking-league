@@ -1,13 +1,19 @@
 import { cardCopy } from '@munchinking/db/schema';
 import { applyDiscardCard, applyPlayCard, DomainRuleError } from '@munchinking/domain';
-import { discardCardInputSchema, playCardInputSchema } from '@munchinking/shared';
+import { discardCardInputSchema, findSeasonCard, playCardInputSchema } from '@munchinking/shared';
 import { eq } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { getActiveSeason, changesOf } from '../services/data';
+import { musActionPredicate, musAfterMovement, musStatusStatement } from '../services/mus';
+import { listMirrorTargets, officialPlay } from '../services/official-play';
 import { newId, nowIso } from '../utils/ids';
 import { protectedProcedure, router } from '../trpc/trpc';
 
 export const cardsRouter = router({
+  mirrorTargets: protectedProcedure.query(async ({ctx}) => {
+    const season = await getActiveSeason(ctx.env.DB, ctx.auth.manager.leagueId);
+    return { items: season ? await listMirrorTargets(ctx.env.DB, season.id, ctx.auth.manager.id) : [] };
+  }),
   play: protectedProcedure.input(playCardInputSchema).mutation(async ({ ctx, input }) => {
     const season = await getActiveSeason(ctx.env.DB, ctx.auth.manager.leagueId);
     if (!season)
@@ -64,6 +70,7 @@ export const cardsRouter = router({
     const now = nowIso();
     const movementId = newId();
     let result;
+    let official: Awaited<ReturnType<typeof officialPlay>> | undefined;
     try {
       result = applyPlayCard({
         season: { id: season.id, isActive: true },
@@ -98,6 +105,16 @@ export const cardsRouter = router({
         notes: input.notes,
         timeZone: ctx.env.APP_TIMEZONE ?? 'Europe/Madrid'
       });
+      const rule = findSeasonCard(copy.slug);
+      if (rule) {
+        official = await officialPlay(ctx.env.DB, rule, input, ctx.auth.manager, season.id, now);
+        result.movement.targetManagerId = official.resolved.targetManagerId;
+        result.movement.targetLabel = official.resolved.targetLabel;
+        result.whatsappMessage += '\n\n' + official.resolved.details.join('\n');
+        result.movement.whatsappMessage = result.whatsappMessage;
+      } else if (input.choices !== undefined || input.rulesConfirmed !== undefined) {
+        throw new DomainRuleError('UNEXPECTED_TARGET', 'Esta carta histórica utiliza el formulario anterior.');
+      }
     } catch (error) {
       if (error instanceof DomainRuleError) {
         const conflict = [
@@ -116,8 +133,9 @@ export const cardsRouter = router({
     const writeResults = await ctx.env.DB.batch([
       ctx.env.DB.prepare(
         `UPDATE card_copy SET location = 'DECK', current_manager_id = NULL
-         WHERE id = ? AND season_id = ? AND location = 'HAND' AND current_manager_id = ?`
-      ).bind(copy.id, season.id, ctx.auth.manager.id),
+         WHERE id = ? AND season_id = ? AND location = 'HAND' AND current_manager_id = ?
+           AND ${musActionPredicate('PLAYED')} AND (${official?.guard.sql ?? '1=1'})`
+      ).bind(copy.id, season.id, ctx.auth.manager.id, ...(official?.guard.binds ?? [])),
       ctx.env.DB.prepare(
         `INSERT INTO card_movement
          (id, season_id, card_copy_id, manager_id, actor_user_id, movement_type, from_location,
@@ -136,12 +154,21 @@ export const cardsRouter = router({
         result.whatsappMessage,
         result.movement.notes,
         result.movement.createdAt
-      )
+      ),
+      musAfterMovement(ctx.env.DB, 'PLAYED', movementId),
+      ...(official ? [ctx.env.DB.prepare(`INSERT INTO card_play_effect
+        (movement_id, choices_json, summary, round_number, mirror_source_id, effective_slug, effective_choices_json)
+        SELECT id, ?, ?, ?, ?, ?, ? FROM card_movement WHERE id=? AND movement_type='PLAYED'`)
+        .bind(JSON.stringify(official.choices), official.resolved.summary, official.roundNumber, official.mirrorSourceId,
+          official.effectiveSlug, JSON.stringify(official.effectiveChoices), movementId)] : [])
     ]);
     if (changesOf(writeResults[0]) !== 1 || changesOf(writeResults[1]) !== 1) {
+      if (await musStatusStatement(ctx.env.DB, ctx.auth.manager.id, season.id).first<number>('required')) {
+        throw new TRPCError({code:'PRECONDITION_FAILED', message:'Mus: descarta primero una de tus cartas de mayor rareza.'});
+      }
       throw new TRPCError({
         code: 'CONFLICT',
-        message: 'La carta ya no está disponible en tu mano.'
+        message: 'No se ha jugado la carta. Revisa tu mano, las protecciones activas y, si usas Espejo, la jugada de origen.'
       });
     }
     return {
@@ -191,7 +218,8 @@ export const cardsRouter = router({
     const writeResults = await ctx.env.DB.batch([
       ctx.env.DB.prepare(
         `UPDATE card_copy SET location = 'DECK', current_manager_id = NULL
-         WHERE id = ? AND season_id = ? AND location = 'HAND' AND current_manager_id = ?`
+         WHERE id = ? AND season_id = ? AND location = 'HAND' AND current_manager_id = ?
+           AND ${musActionPredicate('DISCARDED')}`
       ).bind(copy.id, season.id, ctx.auth.manager.id),
       ctx.env.DB.prepare(
         `INSERT INTO card_movement
@@ -207,9 +235,13 @@ export const cardsRouter = router({
         result.movement.managerId,
         result.movement.actorUserId,
         result.movement.createdAt
-      )
+      ),
+      musAfterMovement(ctx.env.DB, 'DISCARDED', movementId)
     ]);
     if (changesOf(writeResults[0]) !== 1 || changesOf(writeResults[1]) !== 1) {
+      if (await musStatusStatement(ctx.env.DB, ctx.auth.manager.id, season.id).first<number>('required')) {
+        throw new TRPCError({code:'PRECONDITION_FAILED', message:'Mus: debes elegir una carta del rango más alto que tengas.'});
+      }
       throw new TRPCError({
         code: 'CONFLICT',
         message: 'La carta ya no está disponible en tu mano.'

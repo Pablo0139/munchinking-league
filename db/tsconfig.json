@@ -5,5 +5,5 @@
     "noEmit": true,
     "types": ["node", "@cloudflare/workers-types"]
   },
-  "include": ["index.ts", "drizzle.config.ts", "schema/**/*.ts", "seed/**/*.ts"]
+  "include": ["index.ts", "drizzle.config.ts", "schema/**/*.ts", "seed/**/*.ts", "../packages/shared/src/season-cards.ts"]
 }

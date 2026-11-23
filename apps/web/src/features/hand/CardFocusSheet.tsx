@@ -1,5 +1,6 @@
 import {
   discardCardInputSchema,
+  findSeasonCard,
   MAX_TARGET_LABEL_LENGTH,
   playCardInputSchema,
   type DiscardCardInput,
@@ -10,9 +11,10 @@ import { TRPCClientError } from '@trpc/client';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { trpcClient } from '../../lib/trpc';
 import { Card, type HandCard } from './CardFan';
+import { OfficialPlayForm } from './OfficialPlayForm';
 import './focus.css';
 
-type Props = { card: HandCard; onClose: () => void; onChanged: () => void };
+type Props = { card: HandCard; actorId: string; onClose: () => void; onChanged: () => void };
 type Action = { kind: 'play'; input: PlayCardInput } | { kind: 'discard'; input: DiscardCardInput };
 
 function playInput(card: HandCard, value: string, managerIds: string[]) {
@@ -36,7 +38,7 @@ export function CardFocusSheet(props: Props) {
   return <FocusDialog key={props.card.cardCopyId} {...props} />;
 }
 
-function FocusDialog({ card, onClose, onChanged }: Props) {
+function FocusDialog({ card, actorId, onClose, onChanged }: Props) {
   const titleId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -46,6 +48,9 @@ function FocusDialog({ card, onClose, onChanged }: Props) {
   const [value, setValue] = useState('');
   const [copyStatus, setCopyStatus] = useState('');
   const type = card.definition.targetType;
+  const official = findSeasonCard(card.definition.slug);
+  const face = official ?? card.definition;
+  const compensation = official && <p className="ml-focus__notice">Compensación indicativa por descarte: <strong>{{ COMMON: '250.000 €', RARE: '500.000 €', EPIC: '1.000.000 €' }[official.rarity]}</strong>. Requiere aviso previo en el grupo; no se abona automáticamente.</p>;
 
   const write = useMutation({
     retry: false,
@@ -66,9 +71,9 @@ function FocusDialog({ card, onClose, onChanged }: Props) {
   });
   const screen = write.data?.kind ?? (isConflict(write.error) ? 'conflict' : step);
   const targets = useQuery({
-    queryKey: ['manager.listTargets', { excludeSelf: true }],
+    queryKey: ['manager.listTargets', actorId, { excludeSelf: true }],
     queryFn: ({ signal }) => trpcClient.manager.listTargets.query({ excludeSelf: true }, { signal }),
-    enabled: screen === 'play' && type === 'MANAGER',
+    enabled: !official && screen === 'play' && type === 'MANAGER',
     retry: false
   });
   const managers = targets.data?.managers ?? [];
@@ -116,7 +121,7 @@ function FocusDialog({ card, onClose, onChanged }: Props) {
   }
 
   const titles = {
-    inspect: card.definition.name, play: 'Confirmar jugada', discard: 'Confirmar descarte',
+    inspect: face.name, play: 'Confirmar jugada', discard: 'Confirmar descarte',
     played: 'Carta jugada', discarded: 'Carta descartada', conflict: 'La mano ha cambiado'
   };
   return (
@@ -128,15 +133,23 @@ function FocusDialog({ card, onClose, onChanged }: Props) {
       </header>
       {screen === 'inspect' && <>
         <div className="ml-focus__card"><Card definition={card.definition} /></div>
-        <h3>Efecto</h3><p>{card.definition.description}</p>
-        <h3>Reglas de uso</h3><p className="ml-focus__rules">{card.definition.usageRules}</p>
+        <h3>Efecto</h3><p>{face.description}</p>
+        <h3>Reglas de uso</h3><p className="ml-focus__rules">{face.usageRules}</p>
+        {compensation}
         <div className="ml-focus__actions">
           <button type="button" className="ml-focus__primary" onClick={() => navigate('play')}>Jugar</button>
           <button type="button" className="ml-focus__danger" onClick={() => navigate('discard')}>Descartar</button>
         </div>
       </>}
-      {(screen === 'play' || screen === 'discard') && <form onSubmit={(event) => { event.preventDefault(); confirm(); }}>
-        <p><strong>{card.definition.name}</strong></p>
+      {screen === 'play' && official && <OfficialPlayForm card={official} cardCopyId={card.cardCopyId} actorId={actorId}
+        pending={write.isPending} error={write.error?.message} onBack={() => navigate('inspect')} onPlay={input => {
+          if (locked.current) return;
+          locked.current = true;
+          write.mutate({ kind: 'play', input });
+        }} />}
+      {((screen === 'play' && !official) || screen === 'discard') && <form onSubmit={(event) => { event.preventDefault(); confirm(); }}>
+        <p><strong>{face.name}</strong></p>
+        {screen === 'discard' && compensation}
         {screen === 'discard' ? <p>Perderás esta carta de tu mano. Volverá al mazo sin aplicar su efecto.</p>
           : type === 'NONE' ? <p>Esta carta no necesita objetivo. ¿Quieres jugarla?</p>
           : type === 'MANAGER' ? <>
@@ -165,8 +178,8 @@ function FocusDialog({ card, onClose, onChanged }: Props) {
           <button type="button" disabled={write.isPending} onClick={() => navigate('inspect')}>Volver</button>
         </div>
       </form>}
-      {screen === 'conflict' && <p role="alert">Esta carta ya no está disponible para esta acción. Cierra para revisar tu mano actualizada.</p>}
-      {screen === 'discarded' && <p>La carta ha vuelto al mazo sin aplicar su efecto.</p>}
+      {screen === 'conflict' && <p role="alert">{write.error?.message} Cierra para revisar la mano actualizada.</p>}
+      {screen === 'discarded' && <><p>La carta ha vuelto al mazo sin aplicar su efecto.</p>{compensation}</>}
       {write.data?.kind === 'played' && <>
         <label>Mensaje para WhatsApp<textarea ref={preview} readOnly rows={5} value={write.data.whatsappMessage} /></label>
         <button type="button" className="ml-focus__primary" onClick={copyMessage}>Copiar mensaje para WhatsApp</button>
