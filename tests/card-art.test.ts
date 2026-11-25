@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { SEASON_CARDS } from '../packages/shared/src/season-cards';
 import { CARD_ART, cardArtUrl } from '../apps/web/src/lib/card-art';
 import { CardArtwork } from '../apps/web/src/features/hand/CardArtwork';
-import { Card } from '../apps/web/src/features/hand/CardFan';
+import { Card, CardBack } from '../apps/web/src/features/hand/CardFan';
 const handCss = readFileSync(new URL('../apps/web/src/features/hand/hand.css', import.meta.url), 'utf8');
 
 // Resolve the real renderer and React from web, not the root's dependencies.
@@ -62,6 +62,16 @@ describe('ilustraciones oficiales de las 33 cartas', () => {
 
 // Acceptance criteria: accessible artwork without a duplicate text face; safe fallback.
 describe('renderizado real de CardArtwork y Card', () => {
+  it('el reverso utiliza el logo oficial vectorial transparente en lugar del escudo generado', () => {
+    const html = renderToStaticMarkup(createElement(CardBack));
+    expect(html).toContain('class="ml-hand-back"');
+    expect(html).toContain('class="ml-hand-league-logo"');
+    expect(html).toContain('_por-defecto.svg');
+    expect(html).toContain('alt=""');
+    expect(html).not.toContain('<svg');
+    expect(handCss).toMatch(/\.ml-hand-league-logo\s*\{[^}]*filter:\s*brightness\(0\) invert\(1\)/u);
+  });
+
   it('CardArtwork sustituye sus hijos por la imagen oficial', () => {
     const html = renderToStaticMarkup(createElement(CardArtwork, {
       slug: 'esclavitud', name: 'Esclavitud'

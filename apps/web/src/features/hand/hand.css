@@ -56,6 +56,7 @@
 .ml-hand-back::before, .ml-hand-back::after { content: ''; position: absolute; inset: 5%; border: 1px solid #dac2ff; border-radius: 9px; }
 .ml-hand-back::after { inset: 8%; border-color: #dac2ff70; }
 .ml-hand-crest { display: block; width: 37%; height: auto; }
+.ml-hand-league-logo { display: block; width: 64%; height: auto; object-fit: contain; filter: brightness(0) invert(1); }
 .ml-hand-face { container-type: inline-size; flex-direction: column; padding: 3%; gap: .13rem; background: #fffcff; color: #1b1429; font-family: system-ui, sans-serif; }
 .ml-hand-face[data-rarity='RARE'] { --ml-hand-ink: #0284c7; }
 .ml-hand-face[data-rarity='EPIC'] { --ml-hand-ink: #7c3aed; }

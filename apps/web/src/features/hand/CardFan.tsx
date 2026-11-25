@@ -1,6 +1,7 @@
 import { findSeasonCard, MAX_HAND_SIZE, RARITY_LABELS_ES } from '@munchinking/shared';
 import { useId, useState } from 'react';
 import type { trpcClient } from '../../lib/trpc';
+import leagueLogo from '../../../../../docs/muestras-cartas/tintas/_por-defecto.svg?url';
 import { CardArtwork } from './CardArtwork';
 import './hand.css';
 
@@ -22,7 +23,9 @@ function Crest() {
 }
 
 export function CardBack() {
-  return <span className="ml-hand-back" aria-hidden="true"><Crest /></span>;
+  return <span className="ml-hand-back" aria-hidden="true">
+    <img className="ml-hand-league-logo" src={leagueLogo} alt="" width={400} height={420} decoding="async" />
+  </span>;
 }
 
 function Illustration({ src }: { src: string }) {
