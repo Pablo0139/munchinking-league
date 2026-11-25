@@ -1,4 +1,7 @@
 .ml-hand-badge { width: min(22%, 2.5rem); height: auto; align-self: flex-start; object-fit: contain; }
+.ml-card-artwork { display: block; width: 100%; height: auto; aspect-ratio: 608 / 874; object-fit: contain; border-radius: 12px; box-shadow: 0 3px 4px #1b14293b, 0 12px 20px #1b142940; }
+.ml-history-art { float: inline-start; width: 4.5rem; margin-inline-end: 1rem; margin-block-end: .5rem; }
+.ml-list > li:has(.ml-history-art) { display: flow-root; }
 .ml-hand {
   container-type: inline-size;
   overflow: hidden;
@@ -42,7 +45,7 @@
 .ml-hand-pick { display: block; width: 100%; padding: 0; color: inherit; background: transparent; border: 0; border-radius: 16px; text-align: start; font: inherit; cursor: pointer; }
 .ml-hand-toggle:focus-visible, .ml-hand-pick:focus-visible { outline: 3px solid #1b1429; outline-offset: 3px; box-shadow: 0 0 0 8px white; }
 .ml-hand-face, .ml-hand-back {
-  display: flex; box-sizing: border-box; position: relative; width: 100%; aspect-ratio: 5 / 7;
+  display: flex; box-sizing: border-box; position: relative; width: 100%; aspect-ratio: 608 / 874;
   overflow: hidden; border: 3px solid var(--ml-hand-ink, #64748b); border-radius: 16px;
   box-shadow: 0 3px 4px #1b14293b, 0 12px 20px #1b142940;
 }

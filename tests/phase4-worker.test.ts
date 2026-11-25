@@ -106,8 +106,8 @@ it('manager.getProfile: métricas propias de temporada y mano actual', async () 
 const listNotices = (cookie: string, input = {}) => ok('notifications.list', 'GET', cookie, { limit: 50, ...input });
 
 it('notifications.list: revela solo la definición del reparto propio aunque la copia ahora sea del rival', async () => {
-  const { name, nickname, description, usageRules, rarity, targetType, imageUrl } = presi;
-  const expected = { name, nickname, description, usageRules, rarity, targetType, imageUrl };
+  const { slug, name, nickname, description, usageRules, rarity, targetType, imageUrl } = presi;
+  const expected = { slug, name, nickname, description, usageRules, rarity, targetType, imageUrl };
   const summaries = (items: (Item & { card: unknown })[]) => items.map(n => [n.id, n.card]);
   expect(summaries((await listNotices(actor)).items)).toEqual([
     ...[110, 109, 108, 107, 106, 105, 104, 103, 102].map(n => [id(n), null]), [id(101), expected]

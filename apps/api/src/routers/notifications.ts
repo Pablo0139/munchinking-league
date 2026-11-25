@@ -7,7 +7,7 @@ import { decodeCursor, encodeCursor } from '../utils/cursor';
 import { nowIso } from '../utils/ids';
 
 type NotificationRow = Omit<Notification, 'isRead'> & { isRead: number };
-type NoticeCard = Pick<CardDefinition, 'name' | 'nickname' | 'description' | 'usageRules' | 'rarity' | 'targetType' | 'imageUrl'>;
+type NoticeCard = Pick<CardDefinition, 'slug' | 'name' | 'nickname' | 'description' | 'usageRules' | 'rarity' | 'targetType' | 'imageUrl'>;
 type JoinedCard = NoticeCard | { [K in keyof NoticeCard]: null };
 
 const notificationsInput = cursorPaginationInputSchema.extend({
@@ -30,7 +30,7 @@ export const notificationsRouter = router({
       `SELECT n.id, n.manager_id AS managerId, n.notification_type AS notificationType,
               n.title, n.message, n.related_movement_id AS relatedMovementId,
               n.is_read AS isRead, n.read_at AS readAt, n.created_at AS createdAt,
-              d.name, d.nickname, d.description, d.usage_rules AS usageRules,
+              d.slug, d.name, d.nickname, d.description, d.usage_rules AS usageRules,
               d.rarity, d.target_type AS targetType, d.image_url AS imageUrl
        FROM notification n
        LEFT JOIN card_movement m ON n.notification_type = 'CARD_DISTRIBUTED'
@@ -46,10 +46,10 @@ export const notificationsRouter = router({
     const hasMore = rows.length > input.limit;
     const items = rows.slice(0, input.limit).map((row): Notification & { card: NoticeCard | null } => {
       const { id, managerId, notificationType, title, message, relatedMovementId, isRead, readAt, createdAt } = row;
-      const { name, nickname, description, usageRules, rarity, targetType, imageUrl } = row;
+      const { slug, name, nickname, description, usageRules, rarity, targetType, imageUrl } = row;
       return {
         id, managerId, notificationType, title, message, relatedMovementId, isRead: isRead === 1, readAt, createdAt,
-        card: name === null ? null : { name, nickname, description, usageRules, rarity, targetType, imageUrl }
+        card: name === null ? null : { slug, name, nickname, description, usageRules, rarity, targetType, imageUrl }
       };
     });
     const last = items.at(-1);

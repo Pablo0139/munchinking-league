@@ -1,6 +1,7 @@
 import { findSeasonCard, MAX_HAND_SIZE, RARITY_LABELS_ES } from '@munchinking/shared';
 import { useId, useState } from 'react';
 import type { trpcClient } from '../../lib/trpc';
+import { CardArtwork } from './CardArtwork';
 import './hand.css';
 
 export type HandCard = Awaited<ReturnType<typeof trpcClient.manager.getHand.query>>['cards'][number];
@@ -38,7 +39,7 @@ export function Card({ definition: d }: { definition: CardFace }) {
   const official = d.slug ? findSeasonCard(d.slug) : undefined;
   const face = official ?? d;
   const rarity = Object.hasOwn(emblems, d.rarity) ? d.rarity as keyof typeof emblems : null;
-  return <span className="ml-hand-face" data-rarity={rarity ?? 'unknown'}>
+  return <CardArtwork slug={d.slug} name={face.name}><span className="ml-hand-face" data-rarity={rarity ?? 'unknown'}>
     <span className="ml-hand-target">{official ? `T26/27 · Reglamento p. ${official.page}` : targets[d.targetType] ?? 'Especial'}</span>
     {d.imageUrl === '/icons/league-192.png' ? <img className="ml-hand-badge" src={d.imageUrl} alt="" decoding="async" /> : <Illustration key={d.imageUrl} src={d.imageUrl} />}
     <span className="ml-hand-name">{face.name}</span>
@@ -46,7 +47,7 @@ export function Card({ definition: d }: { definition: CardFace }) {
     <span className="ml-hand-effect">{face.description}</span>
     <span className="ml-hand-rarity"><b aria-hidden="true">{rarity ? emblems[rarity] : '◇'}</b>
       {rarity ? RARITY_LABELS_ES[rarity] : 'Sin clasificar'}</span>
-  </span>;
+  </span></CardArtwork>;
 }
 
 export function CardFan({ cards, onSelect }: HandProps) {

@@ -2,6 +2,8 @@ import { MOVEMENT_TYPES, type MovementType } from '@munchinking/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import { trpcClient } from '../../lib/trpc';
+import { CardArtwork } from '../hand/CardArtwork';
+import { cardArtUrl } from '../../lib/card-art';
 import { MoreButton, PanelError, ScreenHeading, Stamp, tableKey } from '../table/shared';
 
 const scopes = ['public', 'mine'] as const;
@@ -85,6 +87,7 @@ export function History({ managerId }: { managerId: string }) {
               <ol className="ml-list" aria-label="Movimientos, del más reciente al más antiguo">
                 {rows.map((row) => (
                   <li key={row.id}>
+                    {cardArtUrl(row.slug) && <span className="ml-history-art"><CardArtwork slug={row.slug} name={row.cardName} /></span>}
                     <strong className="ml-event-name">{row.cardName}</strong>{' '}
                     <span className="ml-pill">{movements[row.movementType]}</span>{' '}
                     {row.isReturned && <span className="ml-pill ml-pill--returned">Devuelta</span>}
