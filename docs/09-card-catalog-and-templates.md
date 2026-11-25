@@ -44,7 +44,7 @@ En «Servidor» se indica lo específico de la carta **además** de los controle
 | 19 | Venta Máxima — vender al máximo histórico | Registra jugador, no consulta cotizaciones. | Obtener máximo desde el 1 de agosto, verificar propiedad y ejecutar venta. |
 | 20 | Intercambio puntuación de jugador — peor propio por mejor rival | Registra rival y ventana de fin. | Al cierre, comparar solo alineados con ≥1 minuto y puntuación base; intercambiar las dos aportaciones. |
 | 20 | Subir al primer equipo — sumar también un titular del compañero | Registra otro mánager y jugador; ventana en juego. | Comprobar escudería, titularidad, valor ≤10 M€ e inicio del partido (gracia de 5 min); sumar solo base. |
-| 20 | Exclavitud — modificar el siguiente pago salarial | Tira d6: 1–5 exime; 6 duplica. | Aplicar el resultado al importe real de la próxima nómina. |
+| 20 | Esclavitud — modificar el siguiente pago salarial | Tira d6: 1–5 exime; 6 duplica. | Aplicar el resultado al importe real de la próxima nómina. |
 | 21 | Bono de representación — cobrar por compra ajena | Valida comprador distinto y calcula el 10 % del precio declarado, al céntimo. | Contrastar comprador, precio pagado y fecha de adquisición en Biwenger (mismo día); abonar. |
 | 21 | Mus — obligar a descartar del mayor rango | Bloquea jugadas de los afectados; valida rareza **al descartar**. No elige ni mueve cartas ajenas. | Cada afectado elige si hay empate; gestionar fuera la compensación por descarte. |
 | 21 | Caja misteriosa — fijar 7 o duplicar solo el exceso sobre 7 | Registra jugador, modalidad y ventana en juego. | Verificar plantilla, inicio (gracia de 5 min) y ≥1 minuto; aplicar modalidad a puntos base. Sin minuto no hay efecto. |

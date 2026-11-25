@@ -55,8 +55,8 @@ describe('contrato de las 33 cartas oficiales', () => {
   it('resuelve los d6 y la selección del sobre', () => {
     const roll = vi.fn(() => 6);
     expect(play('cheque-misterioso', {}, { roll }).summary).toContain('6.000.000 €');
-    expect(play('exclavitud', {}, { roll }).summary).toContain('el doble');
-    expect(play('exclavitud', {}, { roll: () => 5 }).summary).toContain('0 €');
+    expect(play('esclavitud', {}, { roll }).summary).toContain('el doble');
+    expect(play('esclavitud', {}, { roll: () => 5 }).summary).toContain('0 €');
     expect(play('sobre-trucado', pack, { roll }).targetLabel).toBe('Unai');
     expect(roll.mock.calls).toEqual([[6], [6], [6]]);
   });

@@ -36,7 +36,7 @@ Usar la temporada de la copia autenticada y el reloj del servidor. `closed` rech
 | Egoísta, Intercambio puntuación de jugador (17, 20) | Al finalizar: antes del fin confirmado no está abierta para esa jornada, en el fin está abierta y después se confirma externamente. Sin caducidad inventada. |
 | Cambio de Puntuación (23) | Desde fin real hasta fin real +24 h inclusive. Busca la jornada finalizada, incluso si ya empezó la siguiente. Un fin previsto no prueba la finalización. Si solo queda histórico fuera de ventana, confirmar qué jornada corresponde. |
 | Blindaje de Clausulazos, Carta Espejo, Clausulazo Directo (19, 24) | Dependen del domingo de cláusulas, la jugada recibida o el mercado dominical, no del horario de jornada. Mantener sus comprobaciones específicas. |
-| Fondo de inversión, Cupón de descuento, Sobre trucado, Tragaperras, Cheque Misterioso, Venta Máxima, Exclavitud, Bono de representación, Mus, Empresa pantalla, Jugador Mercado Prioritario, Lesión de cruzado (16–24) | Sin ventana de activación por jornada. No confundir requisitos externos ni plazos del efecto con el momento de activación. |
+| Fondo de inversión, Cupón de descuento, Sobre trucado, Tragaperras, Cheque Misterioso, Venta Máxima, Esclavitud, Bono de representación, Mus, Empresa pantalla, Jugador Mercado Prioritario, Lesión de cruzado (16–24) | Sin ventana de activación por jornada. No confundir requisitos externos ni plazos del efecto con el momento de activación. |
 
 ## Expiración de Escudos
 

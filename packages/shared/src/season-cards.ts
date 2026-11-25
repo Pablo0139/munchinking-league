@@ -140,7 +140,7 @@ export const SEASON_CARDS: readonly SeasonCard[] = [
     usageRules: `${live} ${notStarted} ${baseOnly}`, fields: [teammate, player('Titular del compañero de escudería')]
   },
   {
-    slug: 'exclavitud', name: 'Exclavitud', nickname: '', rarity: 'RARE', page: 20,
+    slug: 'esclavitud', name: 'Esclavitud', nickname: '', rarity: 'RARE', page: 20,
     description: 'La tirada de un dado decide tu siguiente pago de salarios: del 1 al 5 no pagas; con un 6 pagas el doble.', usageRules: anytime, fields: []
   },
   {

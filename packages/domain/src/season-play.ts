@@ -153,7 +153,7 @@ export function resolveSeasonPlay(card: SeasonCard, choices: Record<string, stri
       result.summary = `D6: ${face}. Abonar ${eur(face * 1_000_000)}.`;
       break;
     }
-    case 'exclavitud': {
+    case 'esclavitud': {
       const face = roll(6);
       result.summary = `D6: ${face}. Próximo pago de salarios: ${face === 6 ? 'el doble' : '0 €'}.`;
       break;
@@ -207,7 +207,7 @@ export function resolveSeasonPlay(card: SeasonCard, choices: Record<string, stri
       break;
   }
   result.details.push(`Resultado: ${result.summary}`, `Reglamento T26/27, pág. ${card.page}: ${card.usageRules}`);
-  if (!check && !['mus', 'fondo-de-inversion', 'tragaperras', 'cheque-misterioso', 'exclavitud'].includes(card.slug)) {
+  if (!check && !['mus', 'fondo-de-inversion', 'tragaperras', 'cheque-misterioso', 'esclavitud'].includes(card.slug)) {
     check = 'Contrastar las condiciones de la descripción y del reglamento con los datos reales de la liga.';
   }
   if (check) result.details.push(`Verificación externa: ${check}`);
