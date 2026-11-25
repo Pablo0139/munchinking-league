@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El mazo de la liga · Munchinking League T26/27</title>
+  <style>
+    :root { color-scheme: light; --paper: #f1ede3; --ink: #302322; --wine: #672b40; --rule: #beafa0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.5 system-ui, sans-serif; }
+    main { max-width: 88rem; padding: clamp(1.1rem, 4vw, 4rem); margin: auto; }
+    a { color: var(--wine); text-underline-offset: .2em; }
+    :focus-visible { outline: 3px solid var(--wine); outline-offset: 4px; }
+    .folio, nav, .count, footer { font: bold .81rem/1.6 ui-monospace, Consolas, monospace; letter-spacing: .05em; }
+    .folio { color: var(--wine); margin: 0; }
+    h1, h2, figcaption b { font-family: Georgia, serif; }
+    h1 { margin: .13em 0; font-size: clamp(3rem, 7vw, 6rem); line-height: 1.04; letter-spacing: -.05em; }
+    header p:not(.folio) { margin: .8rem 0 1.4rem; max-width: 42rem; }
+    nav { display: flex; gap: .65rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+    nav a { padding: .35rem .85rem; border: 1px solid var(--rule); border-radius: 2rem; text-decoration: none; }
+    nav a:hover { border-color: var(--wine); background: #fff8ed; }
+    .tipo { border-top: 1px solid var(--rule); margin-top: 2.2rem; }
+    .cabecera { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; margin: 1rem 0; }
+    .cabecera p { flex-basis: 100%; margin: 0; }
+    h2 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.2; margin: 0; }
+    .count { color: var(--accent); } .comunes { --accent: #31643b; } .raras { --accent: #235b80; } .epicas { --accent: #6e4183; }
+    .cartas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 1.75rem clamp(1rem, 2vw, 2rem); }
+    figure { width: 100%; max-width: 22rem; margin: 0; }
+    figure a, img { display: block; } img { width: 100%; height: auto; border: 1px solid #ad9e90; box-shadow: 0 3px 7px #34261218; }
+    figcaption { margin-top: .6rem; font-size: .93rem; } figcaption b { display: block; font-size: 1.17rem; }
+    footer { margin-top: 2rem; padding-top: .7rem; border-top: 1px solid var(--rule); }
+    dialog { width: min(61rem, calc(100% - 2rem)); max-height: calc(100dvh - 1.5rem); padding: 0; border: 1px solid #968477; color: var(--ink); background: var(--paper); }
+    dialog::backdrop { background: rgb(31 24 25 / 82%); }
+    .prueba { display: grid; grid-template-columns: minmax(12rem, 1.2fr) minmax(14rem, .8fr); }
+    .estampa { display: grid; place-items: center; min-width: 0; padding: 1rem; background: #32282b; }
+    .estampa img { width: auto; max-width: 100%; max-height: min(77dvh, 52rem); border: 0; box-shadow: none; object-fit: contain; }
+    .ficha { padding: clamp(1rem, 3vw, 2.25rem); align-self: center; }
+    .ficha h2 { font-size: clamp(1.75rem, 3.2vw, 3rem); line-height: 1.04; }
+    .ficha .folio { margin-bottom: .75rem; } .controles { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-top: 1.2rem; }
+    button { cursor: pointer; padding: .55rem .8rem; min-height: 2.75rem; border: 1px solid var(--rule); border-radius: .25rem; background: #f9f6ee; color: var(--ink); font: inherit; }
+    button:hover { border-color: var(--wine); } button:disabled { opacity: .45; cursor: default; }
+    #cerrar { margin-inline-start: auto; }
+    @media (max-width: 44rem) { .prueba { grid-template-columns: 1fr; } .estampa { padding: .65rem; } .estampa img { max-height: 50dvh; } .ficha { padding: 1rem; } }
+    @media (max-width: 32rem) { figure { margin-inline: auto; } }
+  </style>
+</head>
+<body><main id="inicio">
+  <header><p class="folio">MUNCHINKING LEAGUE &nbsp;/&nbsp; T26–27 &nbsp;/&nbsp; ATLAS DE CARTAS</p>
+    <h1>El mazo de la liga</h1>
+    <p>Las $total cartas de la temporada, ilustradas a una tinta. El sello de la esquina inferior izquierda indica la rareza. Selecciona un anverso para ampliarlo y recorrer el mazo.</p>
+    <nav aria-label="Índice de la colección">$nav<a href="lamina.jpg">Lámina completa ↗</a></nav>
+  </header>
+$sections
+  <footer>COLECCIÓN T26–27 &nbsp;/&nbsp; $total ANVERSOS &nbsp;·&nbsp; <a href="#inicio">Volver al índice ↑</a></footer>
+</main>
+<dialog id="visor" aria-labelledby="nombre"><div class="prueba">
+  <div class="estampa"><img id="ampliada" width="608" height="874" alt=""></div>
+  <div class="ficha"><p id="folio" class="folio"></p><h2 id="nombre"></h2><p id="efecto"></p>
+    <div class="controles"><button type="button" id="anterior" aria-label="Carta anterior">←</button><button type="button" id="siguiente" aria-label="Carta siguiente">→</button><button type="button" id="cerrar" autofocus>Cerrar</button></div>
+    <span id="anuncio" role="status" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)"></span>
+  </div>
+</div></dialog>
+<script src="visor.js" defer></script>
+</body></html>
